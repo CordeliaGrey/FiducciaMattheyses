@@ -48,3 +48,13 @@ class FiducciaMattheyses:
             self.net_array[net] = {cell}
         else:
             self.net_array[net].add(cell)
+
+
+class Cell:
+    def __init__(self, n: int):
+        assert n >= 0
+        self.n = n      # the cell number
+        self.pins = 0   # number of nets
+        self.nets = []  # nets that this cell is part of
+        self.gain = 0   # the gain of this cell
+
