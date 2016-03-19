@@ -12,8 +12,9 @@ class Cell:
         self.block = block  # the block this cell belongs to
 
     def add_net(self, net):
-        self.nets.add(net)
-        self.pins += 1
+        if net not in self.nets:
+            self.nets.add(net)
+            self.pins += 1
 
 
 class Net:
@@ -25,13 +26,21 @@ class Net:
         self.blockB = 0  # the number of cells in this net that belong to bock B
 
     def add_cell(self, cell):
-        self.cells.add(cell)
+        if cell not in self.cells:
+            self.cells.add(cell)
 
 
 class Block:
-    def __init__(self, pmax):
+    def __init__(self, name, pmax):
+        self.name = name
         self.size = 0
         self.bucket_array = BucketArray(pmax)
+
+    def get_candidate_base_cell(self) -> Cell:
+        """
+        returns the chosen base cell or None if no such cell was found
+        """
+        return self.bucket_array.get_candidate_base_cell()
 
 
 class BucketArray:
@@ -90,7 +99,7 @@ class BucketArray:
         assert isinstance(cell, Cell)
         self.free_cell_list.append(cell)
 
-    def get_base_cell(self):
+    def get_candidate_base_cell(self):
         """
         get the first cell of the list that max gain points to. If there is no such cell None is returned
         """

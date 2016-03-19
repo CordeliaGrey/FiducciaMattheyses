@@ -10,6 +10,7 @@ class FiducciaMattheyses:
     def __init__(self):
         self.cell_array = {}
         self.net_array = {}
+        self.pmax = 0
 
     def input_routine(self, correlation_matrix: np.ndarray):
         """
@@ -30,6 +31,10 @@ class FiducciaMattheyses:
                 if correlation_matrix[i][j] == 1:
                     self.__add_pair(i, j, net)
                     net += 1
+
+        for cell in self.cell_array.values():
+            if cell.pins > self.pmax:
+                self.pmax = cell.pins
 
     def __add_pair(self, i: int, j: int, net_n: int):
         """

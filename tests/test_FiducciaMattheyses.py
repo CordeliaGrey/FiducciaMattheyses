@@ -24,11 +24,11 @@ def test_input_routine():
         for cell in net.cells:
             assert net in cell.nets
 
-    for net in fm.net_array.keys():
-        print("net %d: %s" % (net, ",".join([str(x.n) for x in fm.net_array[net].cells])))
-
-    for cell in fm.cell_array.keys():
-        print("cell %d: %s" % (cell, ",".join([str(x.n) for x in fm.cell_array[cell].nets])))
+    # for net in fm.net_array.keys():
+    #     print("net %d: %s" % (net, ",".join([str(x.n) for x in fm.net_array[net].cells])))
+    #
+    # for cell in fm.cell_array.keys():
+    #     print("cell %d: %s" % (cell, ",".join([str(x.n) for x in fm.cell_array[cell].nets])))
 
     assert {0, 1} == set(x.n for x in fm.net_array[0].cells)
     assert {0, 2} == set(x.n for x in fm.net_array[1].cells)
@@ -43,3 +43,5 @@ def test_input_routine():
     assert {1, 3, 5} == set(x.n for x in fm.cell_array[2].nets)
     assert {4, 6} == set(x.n for x in fm.cell_array[3].nets)
     assert {2, 5, 6} == set(x.n for x in fm.cell_array[4].nets)
+
+    assert fm.pmax == 3
