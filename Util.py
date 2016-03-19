@@ -1,6 +1,37 @@
-from FiducciaMattheyses import Cell
-
 __author__ = 'gm'
+
+
+class Cell:
+    def __init__(self, n: int, block):
+        assert n >= 0
+        assert isinstance(block, Block)
+        self.n = n  # the cell number
+        self.pins = 0  # number of nets
+        self.nets = set()  # nets that this cell is part of
+        self.gain = 0  # the gain of this cell
+        self.block = block  # the block this cell belongs to
+
+    def add_net(self, net):
+        self.nets.add(net)
+        self.pins += 1
+
+
+class Net:
+    def __init__(self, n: int):
+        assert n >= 0
+        self.n = n  # the net number
+        self.cells = set()  # the cells that this net contains
+        self.blockA = 0  # the number of cells in this net that belong to bock A
+        self.blockB = 0  # the number of cells in this net that belong to bock B
+
+    def add_cell(self, cell):
+        self.cells.add(cell)
+
+
+class Block:
+    def __init__(self, pmax):
+        self.size = 0
+        self.bucket_array = BucketArray(pmax)
 
 
 class BucketArray:

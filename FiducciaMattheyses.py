@@ -1,29 +1,8 @@
 import numpy as np
+from Cell import Cell
+from Net import Net
 
 __author__ = 'gm'
-
-
-class Cell:
-    def __init__(self, n: int):
-        assert n >= 0
-        self.n = n         # the cell number
-        self.pins = 0      # number of nets
-        self.nets = set()  # nets that this cell is part of
-        self.gain = 0      # the gain of this cell
-
-    def add_net(self, net):
-        self.nets.add(net)
-        self.pins += 1
-
-
-class Net:
-    def __init__(self, n: int):
-        assert n >= 0
-        self.n = n
-        self.cells = set()  # the cells that this net contains
-
-    def add_cell(self, cell):
-        self.cells.add(cell)
 
 
 class FiducciaMattheyses:

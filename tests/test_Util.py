@@ -1,26 +1,29 @@
-from FiducciaMattheyses import Cell
-from BucketArray import BucketArray
+from Util import *
 
 __author__ = 'gm'
 
 
-def test_BucketArray():
-    ba = BucketArray(5)
+def test_Util():
+
+    pmax = 5
+    ba = BucketArray(pmax)
 
     assert len(ba.array) == 11
     assert ba.max_gain == -5
 
-    c1 = Cell(0)
+    b = Block(pmax)
+
+    c1 = Cell(0, b)
     c1.gain = 1
     c1.nets = 1
     c1.pins = 1
 
-    c2 = Cell(1)
+    c2 = Cell(1, b)
     c2.gain = 1
     c2.nets = 1
     c2.pins = 1
 
-    c3 = Cell(2)
+    c3 = Cell(2, b)
     c3.gain = 5
     c3.nets = 1
     c3.pins = 1
@@ -57,7 +60,7 @@ def test_BucketArray():
 
     assert len(ba.free_cell_list) == 0
     assert c1 in ba[c1.gain]
-    ba2 = BucketArray(5)
+    ba2 = BucketArray(pmax)
 
     ba.move_cell(c1, 3, ba2)
 
