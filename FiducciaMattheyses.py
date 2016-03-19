@@ -3,6 +3,29 @@ import numpy as np
 __author__ = 'gm'
 
 
+class Cell:
+    def __init__(self, n: int):
+        assert n >= 0
+        self.n = n         # the cell number
+        self.pins = 0      # number of nets
+        self.nets = set()  # nets that this cell is part of
+        self.gain = 0      # the gain of this cell
+
+    def add_net(self, net):
+        self.nets.add(net)
+        self.pins += 1
+
+
+class Net:
+    def __init__(self, n: int):
+        assert n >= 0
+        self.n = n
+        self.cells = set()  # the cells that this net contains
+
+    def add_cell(self, cell):
+        self.cells.add(cell)
+
+
 class FiducciaMattheyses:
     def __init__(self):
         self.cell_array = {}
@@ -25,36 +48,42 @@ class FiducciaMattheyses:
         for i in range(I):
             for j in range(i+1, J):
                 if correlation_matrix[i][j] == 1:
-                    self.__add_to_cell_array(i, net)
-                    self.__add_to_net_array(net, i)
-                    self.__add_to_cell_array(j, net)
-                    self.__add_to_net_array(net, j)
+                    self.__add_pair(i, j, net)
                     net += 1
 
-    def __add_to_cell_array(self, cell: int, net: int):
+    def __add_pair(self, i: int, j: int, net_n: int):
         """
-        adds given cell to cell_array if it does not exist and net to this cell's net list
+        add a connected pair of nodes. Adds cell_i, cell_j, net if they do not already exist to cell_array and
+        net array accordingly. Also adds dependencies between the cells and the net
+        """
+        cell_i = self.__add_cell(i)
+        cell_j = self.__add_cell(j)
+        net = self.__add_net(net_n)
+
+        cell_i.add_net(net)
+        cell_j.add_net(net)
+        net.add_cell(cell_i)
+        net.add_cell(cell_j)
+
+    def __add_cell(self, cell: int) -> Cell:
+        """
+        add a cell to the cell_array if it does not exist, return the new cell created or the existing one
         """
         if cell not in self.cell_array:
-            self.cell_array[cell] = {net}
+            cell_obj = Cell(cell)
+            self.cell_array[cell] = cell_obj
         else:
-            self.cell_array[cell].add(net)
+            cell_obj = self.cell_array[cell]
+        return cell_obj
 
-    def __add_to_net_array(self, net: int, cell: int):
+    def __add_net(self, net: int) -> Net:
         """
-        adds given net to net_array if it does not exists and cell to this net's cell list
+        add a net to the net_array if it does not exist, return the new net created or the existing one
         """
         if net not in self.net_array:
-            self.net_array[net] = {cell}
+            net_obj = Net(net)
+            self.net_array[net] = net_obj
         else:
-            self.net_array[net].add(cell)
-
-
-class Cell:
-    def __init__(self, n: int):
-        assert n >= 0
-        self.n = n      # the cell number
-        self.pins = 0   # number of nets
-        self.nets = []  # nets that this cell is part of
-        self.gain = 0   # the gain of this cell
+            net_obj = self.net_array[net]
+        return net_obj
 
