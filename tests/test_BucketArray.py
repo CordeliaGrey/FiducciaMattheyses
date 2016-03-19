@@ -57,15 +57,17 @@ def test_BucketArray():
 
     assert len(ba.free_cell_list) == 0
     assert c1 in ba[c1.gain]
+    ba2 = BucketArray(5)
 
-    ba.move_cell(c1, 3)
+    ba.move_cell(c1, 3, ba2)
 
-    assert len(ba.free_cell_list) == 1
+    assert len(ba.free_cell_list) == 0
+    assert len(ba2.free_cell_list) == 1
     assert len(ba[1]) == 1
     assert c1.gain == 3
     assert ba.max_gain == 5
 
-    ba.move_cell(c3, 0)
-    assert len(ba.free_cell_list) == 2
+    ba.move_cell(c3, 0, ba2)
+    assert len(ba2.free_cell_list) == 2
     assert c3.gain == 0
     assert ba.max_gain == 1

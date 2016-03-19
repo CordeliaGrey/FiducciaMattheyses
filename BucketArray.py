@@ -15,18 +15,21 @@ class BucketArray:
         i += self.pmax
         return self.array[i]
 
-    def move_cell(self, cell: Cell, to_gain: int):
+    def move_cell(self, cell: Cell, to_gain: int, bucket_array):
         """
-        move a cell from its bucket list to the free cell list, also adjusting its gain
+        move a cell from its bucket list to the free cell list of some other bucket array, also adjusting its gain
         """
         assert isinstance(cell, Cell)
+        assert isinstance(to_gain, int)
+        assert isinstance(bucket_array, BucketArray)
+
         assert -self.pmax <= cell.gain <= self.pmax
         assert -self.pmax <= to_gain <= self.pmax
         self[cell.gain].remove(cell)
         if len(self[cell.gain]) == 0:
             self.decrement_max_gain()
         cell.gain = to_gain
-        self.free_cell_list.append(cell)
+        bucket_array.add_to_free_cell_list(cell)
 
     def decrement_max_gain(self):
         """
@@ -48,3 +51,10 @@ class BucketArray:
         self[cell.gain].append(cell)
         if cell.gain > self.max_gain:
             self.max_gain = cell.gain
+
+    def add_to_free_cell_list(self, cell: Cell):
+        """
+        puts the cell to the free cell list of this BucketArray, keep locked cells here until reinitialization
+        """
+        assert isinstance(cell, Cell)
+        self.free_cell_list.append(cell)
