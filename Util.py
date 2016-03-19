@@ -4,7 +4,7 @@ __author__ = 'gm'
 class Cell:
     def __init__(self, n: int, block):
         assert n >= 0
-        assert isinstance(block, Block)
+        assert isinstance(block, str)
         self.n = n  # the cell number
         self.pins = 0  # number of nets
         self.nets = set()  # nets that this cell is part of
@@ -89,3 +89,13 @@ class BucketArray:
         """
         assert isinstance(cell, Cell)
         self.free_cell_list.append(cell)
+
+    def get_base_cell(self):
+        """
+        get the first cell of the list that max gain points to. If there is no such cell None is returned
+        """
+        l = self[self.max_gain]
+        if len(l) == 0:
+            return None
+        else:
+            return l[0]

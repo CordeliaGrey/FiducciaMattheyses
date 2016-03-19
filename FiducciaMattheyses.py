@@ -1,11 +1,12 @@
 import numpy as np
-from Cell import Cell
-from Net import Net
+from Util import Cell, Net
 
 __author__ = 'gm'
 
 
 class FiducciaMattheyses:
+    INITIAL_BLOCK = "A"
+
     def __init__(self):
         self.cell_array = {}
         self.net_array = {}
@@ -49,7 +50,7 @@ class FiducciaMattheyses:
         add a cell to the cell_array if it does not exist, return the new cell created or the existing one
         """
         if cell not in self.cell_array:
-            cell_obj = Cell(cell)
+            cell_obj = Cell(cell, FiducciaMattheyses.INITIAL_BLOCK)
             self.cell_array[cell] = cell_obj
         else:
             cell_obj = self.cell_array[cell]
