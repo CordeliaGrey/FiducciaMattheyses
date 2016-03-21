@@ -156,13 +156,30 @@ class FiducciaMattheyses:
         # TODO implement
         pass
 
+    def compute_initial_gains(self):
+        """
+        computes initial gains for all free cells, assumes that all cells initially belong to block A and are all free
+        """
+        for cell in self.cell_array.values():
+            assert cell.block == "A"
+            assert cell.locked is False
+            cell.gain = 0
+            for net in cell.nets:
+                # FROM block is "A" since all cells initially belong to "A"
+                if net.blockA == 1:
+                    cell.gain += 1
+                if net.blockB == 0:
+                    cell.gain -= 1
+
     def initial_pass(self):
         """
-        initial pass to establish a balanced partition
+        initial pass to establish a balanced partition, input_routine should have been called first
         """
         assert self.blockA is not None
         assert self.blockB is not None
-        for cell in self.cell_array.values():
+
+        self.compute_initial_gains()
+        for cell in self.cell_array.values():  # TODO: pick cell using max gain
             if self.is_partition_balanced():
                 break
             assert cell.block == "A"  # all cells initially belong to block A

@@ -45,3 +45,24 @@ def test_input_routine():
     assert {2, 5, 6} == set(x.n for x in fm.cell_array[4].nets)
 
     assert fm.pmax == 3
+
+
+def test_compute_initial_gains():
+    PM = [[1, 1, 1, 0, 1],
+          [1, 1, 1, 1, 0],
+          [1, 1, 1, 0, 1],
+          [0, 1, 0, 1, 1],
+          [1, 0, 1, 1, 1]]
+
+    PM = np.array(PM, dtype="b1", order='C')
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
+
+    fm.compute_initial_gains()
+
+    assert fm.cell_array[0].gain == -3
+    assert fm.cell_array[1].gain == -3
+    assert fm.cell_array[2].gain == -3
+    assert fm.cell_array[3].gain == -2
+    assert fm.cell_array[4].gain == -3
