@@ -32,9 +32,21 @@ class Cell:
 
     def lock(self):
         self.locked = True
+        for net in self.nets:
+            if self.block == "A":
+                net.blockA_locked += 1
+            else:
+                assert self.block == "B"
+                net.blockB_locked += 1
 
     def unlock(self):
         self.locked = False
+        for net in self.nets:
+            if self.block == "A":
+                net.blockA_locked -= 1
+            else:
+                assert self.block == "B"
+                net.blockB_locked -= 1
 
 
 class Net:
@@ -44,6 +56,8 @@ class Net:
         self.cells = set()  # the cells that this net contains
         self.blockA = 0  # the number of cells in this net that belong to bock A
         self.blockB = 0  # the number of cells in this net that belong to bock B
+        self.blockA_locked = 0  # number of cells in this net belong to block A and are locked
+        self.blockB_locked = 0  # number of cells in this net belong to block B and are locked
 
     def add_cell(self, cell):
         """
