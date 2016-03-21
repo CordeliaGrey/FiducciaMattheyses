@@ -179,6 +179,9 @@ class FiducciaMattheyses:
         assert self.blockB is not None
 
         self.compute_initial_gains()
+
+        assert self.blockA.size >= self.blockB.size
+        bcell = self.blockA.get_candidate_base_cell()
         for cell in self.cell_array.values():  # TODO: pick cell using max gain
             if self.is_partition_balanced():
                 break

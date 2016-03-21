@@ -105,7 +105,14 @@ class Block:
         assert self.size >= 0
         cell.block = block.name
         self.bucket_array.move_cell(cell, 0, block.bucket_array)  # TODO: calc gain
+        block.size += 1
         cell.adjust_net_distribution()
+
+    def initialize(self):
+        """
+        move cells from the free cell list of this block's bucket list back to the appropriate buckets
+        """
+        self.bucket_array.initialize()
 
 
 class BucketArray:
@@ -175,3 +182,12 @@ class BucketArray:
             return None
         else:
             return l[0]
+
+    def initialize(self):
+        """
+        move cells from the free cell list back to the appropriate buckets
+        """
+        for cell in self.free_cell_list:
+            cell.unlock()
+            self.add_cell(cell)
+        self.free_cell_list.clear()
