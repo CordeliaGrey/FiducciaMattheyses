@@ -2,19 +2,39 @@ __author__ = 'gm'
 
 
 class Cell:
-    def __init__(self, n: int, block):
+    def __init__(self, n: int, block: str):
         assert n >= 0
         assert isinstance(block, str)
+        assert block == "A" or block == "B"
         self.n = n  # the cell number
         self.pins = 0  # number of nets
         self.nets = set()  # nets that this cell is part of
         self.gain = 0  # the gain of this cell
-        self.block = block  # the block this cell belongs to
+        self.block = block  # the block this cell belongs to, "A" or "B"
+        self.locked = False  # whether this cell locked or free to move
 
     def add_net(self, net):
         if net not in self.nets:
             self.nets.add(net)
             self.pins += 1
+
+    def adjust_net_distribution(self):
+        """
+        call this after the cell moved to its complementary block, to adjust each nets distribution (each net that
+        contains this cell)
+        """
+        for net in self.nets:
+            if self.block == "A":  # "A" after move, so the cell moved to "A"
+                net.cell_to_blockA()
+            else:
+                assert self.block == "B"  # "B" after move, so the cell moved to "B"
+                net.cell_to_blockB()
+
+    def lock(self):
+        self.locked = True
+
+    def unlock(self):
+        self.locked = False
 
 
 class Net:
@@ -26,8 +46,34 @@ class Net:
         self.blockB = 0  # the number of cells in this net that belong to bock B
 
     def add_cell(self, cell):
+        """
+        add a cell to this net, increment blockA or blockB numbers depending on what block the added cell belongs to
+        """
         if cell not in self.cells:
             self.cells.add(cell)
+            if cell.block == "A":
+                self.blockA += 1
+            else:
+                assert cell.block == "B"
+                self.blockB += 1
+
+    def cell_to_blockA(self):
+        """
+        call this when a cell moved to blockA, increments blockA and decrements blockB
+        """
+        self.blockA += 1
+        self.blockB -= 1
+        assert self.blockA >= 0
+        assert self.blockB >= 0
+
+    def cell_to_blockB(self):
+        """
+        call this when a cell moved to blockB, increments blockB and decrements blockA
+        """
+        self.blockB += 1
+        self.blockA -= 1
+        assert self.blockA >= 0
+        assert self.blockB >= 0
 
 
 class Block:
@@ -42,6 +88,25 @@ class Block:
         """
         return self.bucket_array.get_candidate_base_cell()
 
+    def add_cell(self, cell: Cell):
+        """
+        add a cell to this block's bucket list (in the free cell list)
+        """
+        assert isinstance(cell, Cell)
+        self.bucket_array.add_to_free_cell_list(cell)
+        self.size += 1
+
+    def move_cell(self, cell: Cell, block):
+        """
+        move the given cell to the specified block, this should always be its complementary block
+        """
+        assert isinstance(cell, Cell)
+        self.size -= 1
+        assert self.size >= 0
+        cell.block = block.name
+        self.bucket_array.move_cell(cell, 0, block.bucket_array)  # TODO: calc gain
+        cell.adjust_net_distribution()
+
 
 class BucketArray:
     def __init__(self, pmax):
@@ -55,13 +120,14 @@ class BucketArray:
         i += self.pmax
         return self.array[i]
 
-    def move_cell(self, cell: Cell, to_gain: int, bucket_array):
+    def move_cell(self, cell: Cell, to_gain: int, to_bucket_array):
         """
-        move a cell from its bucket list to the free cell list of some other bucket array, also adjusting its gain
+        move a cell from its bucket to the free cell list of some other bucket array, also adjusting its gain
         """
         assert isinstance(cell, Cell)
         assert isinstance(to_gain, int)
-        assert isinstance(bucket_array, BucketArray)
+        assert isinstance(to_bucket_array, BucketArray)
+        assert cell.locked is False
 
         assert -self.pmax <= cell.gain <= self.pmax
         assert -self.pmax <= to_gain <= self.pmax
@@ -69,7 +135,8 @@ class BucketArray:
         if len(self[cell.gain]) == 0:
             self.decrement_max_gain()
         cell.gain = to_gain
-        bucket_array.add_to_free_cell_list(cell)
+        cell.lock()
+        to_bucket_array.add_to_free_cell_list(cell)
 
     def decrement_max_gain(self):
         """
@@ -83,7 +150,7 @@ class BucketArray:
 
     def add_cell(self, cell: Cell):
         """
-        add a cell to the appropriate bucket list, depending on its gain. Adjust max gain index appropriately
+        add a cell to the appropriate bucket, depending on its gain. Adjust max gain index appropriately
         """
         assert isinstance(cell, Cell)
         assert -self.pmax <= cell.gain <= self.pmax

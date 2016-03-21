@@ -160,6 +160,10 @@ class FiducciaMattheyses:
         """
         initial pass to establish a balanced partition
         """
-        while not self.is_partition_balanced():
-            # TODO implement
-            pass
+        assert self.blockA is not None
+        assert self.blockB is not None
+        for cell in self.cell_array.values():
+            if self.is_partition_balanced():
+                break
+            assert cell.block == "A"  # all cells initially belong to block A
+            self.blockA.move_cell(cell, self.blockB)
