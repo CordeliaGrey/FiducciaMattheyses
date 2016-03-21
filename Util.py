@@ -58,8 +58,12 @@ class Net:
         assert n >= 0
         self.n = n  # the net number
         self.cells = set()  # the cells that this net contains
-        self.blockA = 0  # the number of cells in this net that belong to bock A
-        self.blockB = 0  # the number of cells in this net that belong to bock B
+        self.blockA_ref = None  # a reference to the block A object
+        """:type blockA_ref Block"""
+        self.blockB_ref = None  # a reference to the block B object
+        """:type blockB_ref Block"""
+        self.blockA = 0  # the number of cells in this net that belong to block A
+        self.blockB = 0  # the number of cells in this net that belong to block B
         self.blockA_locked = 0  # number of cells in this net that belong to block A and are locked
         self.blockB_locked = 0  # number of cells in this net that belong to block B and are locked
         self.blockA_free = 0    # number of cells in this net that belong to block A and are not locked
@@ -109,12 +113,63 @@ class Net:
         assert self.blockA_free + self.blockA_locked == self.blockA
         assert self.blockB_free + self.blockB_locked == self.blockB
 
+    def inc_gains_of_free_cells(self):
+        """
+        increments gains of all free cells in this net that are not locked. This should be called before the move
+        """
+        for cell in self.cells:
+            if not cell.locked:
+                cell.gain += 1
+
+    def dec_gain_Tcell(self, to_side: str):
+        """
+        decrements the gain of the only T cell in this net if it is free. This should be called before the move
+        """
+        assert self.blockA_ref is not None
+        assert self.blockB_ref is not None
+
+        if to_side == "A":
+            assert self.blockA_free == 1
+            assert len(self.blockA_ref.cells) == 1
+            self.blockA_ref.cells[0].gain -= 1
+        else:
+            assert to_side == "B"
+            assert self.blockB_free == 1
+            assert len(self.blockB_ref.cells) == 1
+            self.blockB_ref.cells[0].gain -= 1
+
+    def dec_gains_of_free_cells(self):
+        """
+        decrements gains of all free cells in this net that are not locked. This should be called after the move
+        """
+        for cell in self.cells:
+            if not cell.locked:
+                cell.gain -= 1
+
+    def inc_gain_Fcell(self, from_side: str):
+        """
+        increments the gain of the only F cell in this net if it is free. This should be called after the move
+        """
+        assert self.blockA_ref is not None
+        assert self.blockB_ref is not None
+
+        if from_side == "A":
+            assert self.blockA_free == 1
+            assert len(self.blockA_ref.cells) == 1
+            self.blockA_ref.cells[0].gain += 1
+        else:
+            assert from_side == "B"
+            assert self.blockB_free == 1
+            assert len(self.blockB_ref.cells) == 1
+            self.blockB_ref.cells[0].gain += 1
+
 
 class Block:
     def __init__(self, name, pmax):
         self.name = name
         self.size = 0
         self.bucket_array = BucketArray(pmax)
+        self.cells = []  # cells that belong to this block
 
     def get_candidate_base_cell(self) -> Cell:
         """
@@ -128,6 +183,7 @@ class Block:
         """
         assert isinstance(cell, Cell)
         self.bucket_array.add_to_free_cell_list(cell)
+        self.cells.append(cell)
         self.size += 1
 
     def move_cell(self, cell: Cell, block):
@@ -136,11 +192,48 @@ class Block:
         """
         assert isinstance(cell, Cell)
         self.size -= 1
+        self.cells.remove(cell)
         assert self.size >= 0
         cell.block = block.name
-        self.bucket_array.move_cell(cell, 0, block.bucket_array)  # TODO: calc gain
+
+        self.__adjust_gains_before_move(cell)
+        self.bucket_array.move_cell(cell, cell.gain, block.bucket_array)
+        self.__adjust_gains_after_move(cell)
+
         block.size += 1
         cell.adjust_net_distribution()
+
+    def __adjust_gains_before_move(self, cell: Cell):
+        assert isinstance(cell, Cell)
+        for net in cell.nets:
+            if cell.block == "A":
+                LT = net.blockB_locked
+                FT = net.blockB_free
+            else:
+                assert cell.block == "B"
+                LT = net.blockA_locked
+                FT = net.blockA_free
+            if LT == 0:
+                if FT == 0:
+                    net.inc_gains_of_free_cells()
+                elif FT == 1:
+                    net.dec_gain_Tcell("A" if cell.block == "B" else "B")
+
+    def __adjust_gains_after_move(self, cell: Cell):
+        assert isinstance(cell, Cell)
+        for net in cell.nets:
+            if cell.block == "A":
+                LF = net.blockA_locked
+                FF = net.blockA_free
+            else:
+                assert cell.block == "B"
+                LF = net.blockB_locked
+                FF = net.blockB_free
+            if LF == 0:
+                if FF == 0:
+                    net.dec_gains_of_free_cells()
+                elif FF == 1:
+                    net.inc_gain_Fcell("A" if cell.block == "B" else "B")
 
     def initialize(self):
         """

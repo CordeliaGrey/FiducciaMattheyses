@@ -47,6 +47,11 @@ class FiducciaMattheyses:
 
         for cell in self.cell_array.values():
             self.blockA.add_cell(cell)
+        for net in self.net_array.values():
+            net.blockA_ref = self.blockA
+            net.blockB_ref = self.blockB
+        self.compute_initial_gains()
+        self.blockA.initialize()
 
     def __add_pair(self, i: int, j: int, net_n: int):
         """
@@ -151,25 +156,6 @@ class FiducciaMattheyses:
         r = FiducciaMattheyses.r
         A = self.blockA.size
         return r * W - smax <= A <= r * W + smax
-
-    def move_cell(self, cell: Cell):
-        """
-        move the given cell to its complementary block
-        """
-        # TODO implement
-        pass
-
-    # def calculate_gain(self, cell: Cell):
-    #     """
-    #     calculate the gain for a given cell
-    #     """
-    #     assert isinstance(cell, Cell)
-    #
-    #     for net in cell.nets:
-    #         if cell.block == "A":
-    #             LT = net.blockB_locked
-    #
-
 
     def compute_initial_gains(self):
         """
