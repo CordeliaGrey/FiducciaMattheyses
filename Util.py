@@ -35,18 +35,22 @@ class Cell:
         for net in self.nets:
             if self.block == "A":
                 net.blockA_locked += 1
+                net.blockA_free -= 1
             else:
                 assert self.block == "B"
                 net.blockB_locked += 1
+                net.blockB_free -= 1
 
     def unlock(self):
         self.locked = False
         for net in self.nets:
             if self.block == "A":
                 net.blockA_locked -= 1
+                net.blockA_free += 1
             else:
                 assert self.block == "B"
                 net.blockB_locked -= 1
+                net.blockB_free += 1
 
 
 class Net:
@@ -56,8 +60,10 @@ class Net:
         self.cells = set()  # the cells that this net contains
         self.blockA = 0  # the number of cells in this net that belong to bock A
         self.blockB = 0  # the number of cells in this net that belong to bock B
-        self.blockA_locked = 0  # number of cells in this net belong to block A and are locked
-        self.blockB_locked = 0  # number of cells in this net belong to block B and are locked
+        self.blockA_locked = 0  # number of cells in this net that belong to block A and are locked
+        self.blockB_locked = 0  # number of cells in this net that belong to block B and are locked
+        self.blockA_free = 0    # number of cells in this net that belong to block A and are not locked
+        self.blockB_free = 0    # number of cells in this net that belong to block B and are not locked
 
     def add_cell(self, cell):
         """
@@ -67,27 +73,41 @@ class Net:
             self.cells.add(cell)
             if cell.block == "A":
                 self.blockA += 1
+                self.blockA_free += 1
             else:
                 assert cell.block == "B"
                 self.blockB += 1
+                self.blockB_free += 1
 
     def cell_to_blockA(self):
         """
         call this when a cell moved to blockA, increments blockA and decrements blockB
         """
         self.blockA += 1
+        self.blockA_free += 1
         self.blockB -= 1
+        self.blockB_free -= 1
         assert self.blockA >= 0
+        assert self.blockA_free >= 0
         assert self.blockB >= 0
+        assert self.blockB_free >= 0
+        assert self.blockA_free + self.blockA_locked == self.blockA
+        assert self.blockB_free + self.blockB_locked == self.blockB
 
     def cell_to_blockB(self):
         """
         call this when a cell moved to blockB, increments blockB and decrements blockA
         """
         self.blockB += 1
+        self.blockB_free += 1
         self.blockA -= 1
+        self.blockA_free -= 1
         assert self.blockA >= 0
+        assert self.blockA_free >= 0
         assert self.blockB >= 0
+        assert self.blockB_free >= 0
+        assert self.blockA_free + self.blockA_locked == self.blockA
+        assert self.blockB_free + self.blockB_locked == self.blockB
 
 
 class Block:

@@ -45,6 +45,9 @@ class FiducciaMattheyses:
         self.blockA = Block("A", self.pmax)
         self.blockB = Block("B", self.pmax)
 
+        for cell in self.cell_array.values():
+            self.blockA.add_cell(cell)
+
     def __add_pair(self, i: int, j: int, net_n: int):
         """
         add a connected pair of nodes. Adds cell_i, cell_j, net if they do not already exist to cell_array and
@@ -156,6 +159,18 @@ class FiducciaMattheyses:
         # TODO implement
         pass
 
+    # def calculate_gain(self, cell: Cell):
+    #     """
+    #     calculate the gain for a given cell
+    #     """
+    #     assert isinstance(cell, Cell)
+    #
+    #     for net in cell.nets:
+    #         if cell.block == "A":
+    #             LT = net.blockB_locked
+    #
+
+
     def compute_initial_gains(self):
         """
         computes initial gains for all free cells, assumes that all cells initially belong to block A and are all free
@@ -181,9 +196,7 @@ class FiducciaMattheyses:
         self.compute_initial_gains()
 
         assert self.blockA.size >= self.blockB.size
-        bcell = self.blockA.get_candidate_base_cell()
-        for cell in self.cell_array.values():  # TODO: pick cell using max gain
-            if self.is_partition_balanced():
-                break
-            assert cell.block == "A"  # all cells initially belong to block A
-            self.blockA.move_cell(cell, self.blockB)
+        while not self.is_partition_balanced():
+            bcell = self.blockA.get_candidate_base_cell()
+            assert bcell.block == "A"  # all cells initially belong to block A
+            self.blockA.move_cell(bcell, self.blockB)

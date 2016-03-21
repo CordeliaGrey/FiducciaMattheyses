@@ -66,3 +66,25 @@ def test_compute_initial_gains():
     assert fm.cell_array[2].gain == -3
     assert fm.cell_array[3].gain == -2
     assert fm.cell_array[4].gain == -3
+
+
+def test_initial_pass():
+    PM = [[1, 1, 1, 0, 1],
+          [1, 1, 1, 1, 0],
+          [1, 1, 1, 0, 1],
+          [0, 1, 0, 1, 1],
+          [1, 0, 1, 1, 1]]
+
+    PM = np.array(PM, dtype="b1", order='C')
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
+
+    fm.compute_initial_gains()
+
+    fm.initial_pass()
+
+    print(fm.blockA.size)
+    print(fm.blockB.size)
+
+    assert False

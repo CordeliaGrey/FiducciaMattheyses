@@ -128,14 +128,18 @@ def test_cell_net():
 
     assert c2.locked is False
     assert all(net.blockA_locked == 0 for net in c2.nets)
+    assert all(net.blockA_free == 2 for net in c2.nets)
     c2.lock()
     assert c2.locked is True
     assert all(net.blockA_locked == 1 for net in c2.nets)
+    assert all(net.blockA_free == 1 for net in c2.nets)
     c3.lock()
     assert all(net.blockA_locked == 2 or net.n != 1 for net in c2.nets)
+    assert all(net.blockA_free == 0 or net.n != 1 for net in c2.nets)
     c3.unlock()
     c2.unlock()
     assert all(net.blockA_locked == 0 for net in c2.nets)
+    assert all(net.blockA_free == 2 for net in c2.nets)
 
 
 def test_block():
