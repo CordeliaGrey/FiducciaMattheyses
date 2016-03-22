@@ -68,6 +68,7 @@ class Net:
         self.blockB_locked = 0  # number of cells in this net that belong to block B and are locked
         self.blockA_free = 0    # number of cells in this net that belong to block A and are not locked
         self.blockB_free = 0    # number of cells in this net that belong to block B and are not locked
+        self.cut = False        # whether this net is cut. This means that it has cells both in block A and B
 
     def add_cell(self, cell):
         """
@@ -83,6 +84,14 @@ class Net:
                 self.blockB += 1
                 self.blockB_free += 1
 
+    def __update_cut_state(self):
+        new_cutstate = self.blockA != 0 and self.blockB != 0
+        if self.cut != new_cutstate:
+            if new_cutstate is True:
+                self.blockA_ref.fm.cutset += 1
+            else:
+                self.blockA_ref.fm.cutset -= 1
+
     def cell_to_blockA(self):
         """
         call this when a cell moved to blockA, increments blockA and decrements blockB
@@ -91,6 +100,7 @@ class Net:
         self.blockA_free += 1
         self.blockB -= 1
         self.blockB_free -= 1
+        self.__update_cut_state()
         assert self.blockA >= 0
         assert self.blockA_free >= 0
         assert self.blockB >= 0
@@ -106,6 +116,7 @@ class Net:
         self.blockB_free += 1
         self.blockA -= 1
         self.blockA_free -= 1
+        self.__update_cut_state()
         assert self.blockA >= 0
         assert self.blockA_free >= 0
         assert self.blockB >= 0
@@ -165,11 +176,12 @@ class Net:
 
 
 class Block:
-    def __init__(self, name, pmax):
+    def __init__(self, name, pmax, fm):
         self.name = name
         self.size = 0
         self.bucket_array = BucketArray(pmax)
         self.cells = []  # cells that belong to this block
+        self.fm = fm  # top level object FiducciaMattheyses that contains this block
 
     def get_candidate_base_cell(self) -> Cell:
         """

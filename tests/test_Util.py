@@ -1,4 +1,5 @@
 from Util import *
+from FiducciaMattheyses import FiducciaMattheyses
 
 __author__ = 'gm'
 
@@ -144,6 +145,9 @@ def test_cell_net():
 
 def test_block():
     pmax = 5
+    fm = FiducciaMattheyses()
+    fm.blockA = Block("A", pmax, fm)
+    fm.blockB = Block("B", pmax, fm)
 
     c1 = Cell(0, "A")
     c1.gain = -1
@@ -157,7 +161,9 @@ def test_block():
     n1 = Net(0)
     n1.add_cell(c1)
     n1.add_cell(c2)
+    n1.blockA_ref = fm.blockA
     n2 = Net(1)
+    n2.blockA_ref = fm.blockA
     n2.add_cell(c2)
     n2.add_cell(c3)
 
@@ -166,7 +172,7 @@ def test_block():
     c2.add_net(n2)
     c3.add_net(n2)
 
-    b = Block("A", pmax)
+    b = fm.blockB
     b.add_cell(c1)
     b.add_cell(c2)
     b.add_cell(c3)
@@ -178,9 +184,11 @@ def test_block():
     assert len(b.bucket_array[-2]) == 1
     assert b.get_candidate_base_cell() == c1
 
-    b2 = Block("B", pmax)
+    b2 = Block("B", pmax, FiducciaMattheyses())
 
+    assert fm.cutset == 0
     b.move_cell(c1, b2)
+    assert fm.cutset == 1
 
     assert b.size == 2
     assert b2.size == 1

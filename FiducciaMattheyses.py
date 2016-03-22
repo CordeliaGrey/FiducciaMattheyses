@@ -17,6 +17,7 @@ class FiducciaMattheyses:
         """:type blockA Block"""
         self.blockB = None  # this gets initialized when input routine is called (we need to know pmax)
         """:type blockB Block"""
+        self.cutset = 0  # number of sets that are cut
 
     def input_routine(self, edge_matrix: np.ndarray):
         """
@@ -42,8 +43,8 @@ class FiducciaMattheyses:
             if cell.pins > self.pmax:
                 self.pmax = cell.pins
 
-        self.blockA = Block("A", self.pmax)
-        self.blockB = Block("B", self.pmax)
+        self.blockA = Block("A", self.pmax, self)
+        self.blockB = Block("B", self.pmax, self)
 
         for cell in self.cell_array.values():
             self.blockA.add_cell(cell)
