@@ -72,37 +72,32 @@ def test_bucket_array():
     assert ba[1][1].n == 1
     assert ba.get_candidate_base_cell() == c3
 
-    assert len(ba.free_cell_list) == 0
     assert c1 in ba[c1.gain]
     ba2 = BucketArray(pmax)
     assert c1.locked is False
-    old_gain = c1.gain
     c1.gain = 3
-    ba.move_cell(c1, old_gain, ba2)
-    assert c1.locked is True
+    ba.yank_cell(c1)
+    assert c1.locked is False
 
-    assert len(ba.free_cell_list) == 0
-    assert len(ba2.free_cell_list) == 1
     assert len(ba[1]) == 1
+    assert len(ba[3]) == 1
     assert c1.gain == 3
     assert ba.max_gain == 5
     assert ba.get_candidate_base_cell() == c3
 
     assert c3.locked is False
-    old_gain = c3.gain
-    c3.gain = 0
-    ba.move_cell(c3, old_gain, ba2)
-    assert c3.locked is True
-    assert len(ba2.free_cell_list) == 2
-    assert c3.gain == 0
-    assert ba.max_gain == 1
-    assert ba.get_candidate_base_cell() == c2
+    c3.gain = 4
+    ba.yank_cell(c3)
+    assert c3.locked is False
+    assert c3.gain == 4
+    assert ba.max_gain == 4
+    assert ba.get_candidate_base_cell() == c3
 
-    assert len(ba2[0]) == 0
-    assert len(ba2[3]) == 0
-    ba2.initialize()
-    assert len(ba2[0]) == 1
-    assert len(ba2[3]) == 1
+    ba.remove_cell(c3)
+    assert ba.max_gain == 3
+    assert len(ba[4]) == 0
+
+    assert ba.get_candidate_base_cell() == c1
 
 
 def test_cell_net():
@@ -230,7 +225,7 @@ def test_block():
     assert n1.blockA_free == 2
     assert n1.blockA_locked == 0
     assert fm.cutset == 0
-    b.move_cell(c1, b2)
+    b.move_cell(c1)
     assert fm.cutset == 1
 
     assert b.size == 2

@@ -21,7 +21,7 @@ class Cell:
 
     def adjust_net_distribution(self):
         """
-        call this after the cell moved to its complementary block, to adjust each nets distribution (each net that
+        call this after the cell moved to its complementary block, to adjust each net's distribution (each net that
         contains this cell)
         """
         for net in self.nets:
@@ -56,6 +56,13 @@ class Cell:
                 assert self.block.name == "B"
                 net.blockB_locked -= 1
                 net.blockB_free += 1
+
+    def yank(self):
+        """
+        move this cell from its bucket to a new bucket according to its gain. If its gain has not changed then it is
+        removed and placed again to the same bucket
+        """
+        self.block.bucket_array.yank_cell(self)
 
 
 class Net:
@@ -144,6 +151,7 @@ class Net:
         for cell in self.cells:
             if not cell.locked:
                 cell.gain += 1
+                cell.yank()
 
     def dec_gain_Tcell(self, to_side: str):
         """
@@ -156,11 +164,13 @@ class Net:
             assert self.blockA_free == 1
             assert len(self.blockA_cells) == 1
             self.blockA_cells[0].gain -= 1
+            self.blockA_cells[0].yank()
         else:
             assert to_side == "B"
             assert self.blockB_free == 1
             assert len(self.blockB_cells) == 1
             self.blockB_cells[0].gain -= 1
+            self.blockB_cells[0].yank()
 
     def dec_gains_of_free_cells(self):
         """
@@ -169,6 +179,7 @@ class Net:
         for cell in self.cells:
             if not cell.locked:
                 cell.gain -= 1
+                cell.yank()
 
     def inc_gain_Fcell(self, from_side: str):
         """
@@ -181,20 +192,23 @@ class Net:
             assert self.blockA_free == 1
             assert len(self.blockA_ref.cells) == 1
             self.blockA_ref.cells[0].gain += 1
+            self.blockA_ref.cells[0].yank()
         else:
             assert from_side == "B"
             assert self.blockB_free == 1
             assert len(self.blockB_ref.cells) == 1
             self.blockB_ref.cells[0].gain += 1
+            self.blockB_ref.cells[0].yank()
 
 
 class Block:
-    def __init__(self, name, pmax, fm):
+    def __init__(self, name: str, pmax: int, fm):
         self.name = name
         self.size = 0
         self.bucket_array = BucketArray(pmax)
         self.cells = []  # cells that belong to this block
         self.fm = fm  # top level object FiducciaMattheyses that contains this block
+        """:type fm FiducciaMattheyses.FiducciaMattheyses"""
 
     def get_candidate_base_cell(self) -> Cell:
         """
@@ -209,24 +223,49 @@ class Block:
         assert isinstance(cell, Cell)
         self.bucket_array.add_to_free_cell_list(cell)
         self.cells.append(cell)
+        cell.block = self
         self.size += 1
 
-    def move_cell(self, cell: Cell, block):
+    def remove_cell(self, cell: Cell):
         """
-        move the given cell to the specified block, this should always be its complementary block
+        remove a cell from this block's bucket list
         """
         assert isinstance(cell, Cell)
-        old_gain = cell.gain
-        self.__adjust_gains_before_move(cell)
         self.size -= 1
-        self.cells.remove(cell)
-        block.cells.append(cell)
         assert self.size >= 0
-        cell.block = block
-        self.bucket_array.move_cell(cell, old_gain, block.bucket_array)
+        self.cells.remove(cell)
+        self.bucket_array.remove_cell(cell)
+
+
+    def move_cell(self, cell: Cell):
+        """
+        move the given cell to its complementary block
+        """
+        assert isinstance(cell, Cell)
+        comp_block = cell.block.fm.blockA if cell.block.name == "B" else cell.block.fm.blockB
+        #
+        # Adjust gains and yank cells
+        #
+        self.__adjust_gains_before_move(cell)
+
+        #
+        # Remove cell from this block
+        #
+        self.remove_cell(cell)
+
+        #
+        # Add cell to complementary block
+        #
+        comp_block.add_cell(cell)
+
+        #
+        # Adjust gains and yank cells
+        #
         self.__adjust_gains_after_move(cell)
 
-        block.size += 1
+        #
+        # Adjust the distribution of this cell's nets
+        #
         cell.adjust_net_distribution()
 
     def __adjust_gains_before_move(self, cell: Cell):
@@ -280,31 +319,28 @@ class BucketArray:
         i += self.pmax
         return self.array[i]
 
-    def move_cell_to_complementary_block(self):
+    def remove_cell(self, cell: Cell):
         """
-        move specified cell to its complementary block (in its free cell list) and lock it
-        """
-        pass
-        # TODO implement
-
-    def move_cell(self, cell: Cell, old_gain: int, to_bucket_array):
-        """
-        move a cell from its bucket to the free cell list of some other bucket array. The cell's gain is already
-        updated at this point by the "before move" adjustments. Old_gain is the cell's gain before that
-        adjustment and thus also reflects the index this cell resides in the bucket array
+        remove specified cell from this bucket list
         """
         assert isinstance(cell, Cell)
-        assert isinstance(old_gain, int)
-        assert isinstance(to_bucket_array, BucketArray)
+        assert cell.locked is False
+        cell.bucket.remove(cell)
+        if self[self.max_gain] == cell.bucket and len(cell.bucket) == 0:
+            self.decrement_max_gain()
+        cell.bucket = None
+
+    def yank_cell(self, cell: Cell):
+        """
+        move a cell from its bucket to a new bucket according to its gain. If its gain has not changed then it is
+        removed and placed again to the same bucket
+        """
+        assert isinstance(cell, Cell)
         assert cell.locked is False
 
         assert -self.pmax <= cell.gain <= self.pmax
-        assert -self.pmax <= old_gain <= self.pmax
-        self[old_gain].remove(cell)
-        if len(self[old_gain]) == 0:
-            self.decrement_max_gain()
-        cell.lock()
-        to_bucket_array.add_to_free_cell_list(cell)
+        self.remove_cell(cell)
+        self.add_cell(cell)
 
     def decrement_max_gain(self):
         """
