@@ -193,6 +193,7 @@ class Block:
         assert isinstance(cell, Cell)
         self.size -= 1
         self.cells.remove(cell)
+        block.cells.append(cell)
         assert self.size >= 0
         cell.block = block.name
 

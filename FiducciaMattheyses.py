@@ -186,3 +186,4 @@ class FiducciaMattheyses:
             bcell = self.blockA.get_candidate_base_cell()
             assert bcell.block == "A"  # all cells initially belong to block A
             self.blockA.move_cell(bcell, self.blockB)
+        self.blockB.initialize()
