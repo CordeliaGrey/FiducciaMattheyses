@@ -116,7 +116,7 @@ class Net:
         self.blockB -= 1
         if cell.locked is True:
             self.blockA_locked += 1
-            self.blockB_locked += 1
+            self.blockB_locked -= 1
         else:
             self.blockA_free += 1
             self.blockB_free -= 1
@@ -201,14 +201,14 @@ class Net:
 
         if from_side == "A":
             assert self.blockA_free == 1
-            assert len(self.blockA_ref.cells) == 1
+            assert len(self.blockA_cells) == 1
             cell = self.blockA_ref.cells[0]
             cell.gain += 1
             cell.yank()
         else:
             assert from_side == "B"
             assert self.blockB_free == 1
-            assert len(self.blockB_ref.cells) == 1
+            assert len(self.blockB_cells) == 1
             cell = self.blockB_ref.cells[0]
             cell.gain += 1
             cell.yank()
@@ -257,12 +257,12 @@ class Block:
         comp_block = cell.block.fm.blockA if cell.block.name == "B" else cell.block.fm.blockB
         # lock cell
         cell.lock()
+        # Adjust gains and yank cells before the move
+        self.__adjust_gains_before_move(cell)
         # Remove cell from this block
         self.remove_cell(cell)
         # Add cell to complementary block
         comp_block.add_cell(cell)
-        # Adjust gains and yank cells before the move
-        self.__adjust_gains_before_move(cell)
         # Adjust the distribution of this cell's nets to reflect the move
         cell.adjust_net_distribution()
         # Adjust gains and yank cells after the move

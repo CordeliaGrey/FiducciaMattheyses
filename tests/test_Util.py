@@ -233,11 +233,15 @@ def test_block():
     assert n1.blockA_free == 2
     assert n1.blockA_locked == 0
     assert fm.cutset == 0
+    assert len(b.bucket_array[-1]) == 2
     b.move_cell(c1)
     assert fm.cutset == 1
 
     assert_block(b, fm)
+    assert_block(b2, fm)
 
     assert b.size == 2
     assert b2.size == 1
-    assert len(b.bucket_array[-1]) == 1
+
+    b2.initialize()
+    assert len(b2.bucket_array[c1.gain]) == 1

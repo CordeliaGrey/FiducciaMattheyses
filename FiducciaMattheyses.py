@@ -162,11 +162,9 @@ class FiducciaMattheyses:
 
     def compute_initial_gains(self):
         """
-        computes initial gains for all free cells
+        computes initial gains for all cells
         """
         for cell in self.cell_array.values():
-            if cell.locked is True:
-                continue
             cell.gain = 0
             for net in cell.nets:
                 if cell.block.name == "A":
@@ -192,7 +190,7 @@ class FiducciaMattheyses:
         while not self.is_partition_balanced():
             bcell = self.blockA.get_candidate_base_cell()
             assert bcell.block.name == "A"  # all cells initially belong to block A
-            self.blockA.move_cell(bcell, self.blockB)
+            self.blockA.move_cell(bcell)
 
     def perform_pass(self):
         """
@@ -204,16 +202,17 @@ class FiducciaMattheyses:
         best_net_array = {}
         best_blockA = None
         best_blockB = None
-        bcell = self.get_base_cell()
+
         self.compute_initial_gains()
         self.blockA.initialize()
         self.blockB.initialize()
+        bcell = self.get_base_cell()
         while bcell is not None:
             if bcell.block.name == "A":
-                self.blockA.move_cell(bcell, self.blockB)
+                self.blockA.move_cell(bcell)
             else:
                 assert bcell.block.name == "B"
-                self.blockB.move_cell(bcell, self.blockA)
+                self.blockB.move_cell(bcell)
             if self.cutset < best_cutset:
                 best_cutset = self.cutset
                 best_cell_array = copy.deepcopy(self.cell_array)

@@ -168,7 +168,13 @@ def test_perform_pass():
 
     fm = FiducciaMattheyses()
     fm.input_routine(PM)
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
     fm.initial_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
     fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
 
     assert True
