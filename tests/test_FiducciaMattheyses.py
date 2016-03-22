@@ -1,5 +1,6 @@
 import numpy as np
 from FiducciaMattheyses import FiducciaMattheyses
+from Util import *
 
 __author__ = 'gm'
 
@@ -24,6 +25,8 @@ def test_input_routine():
         for cell in net.cells:
             assert net in cell.nets
 
+    # uncomment the following and make the test fail (eg using "assert False" at the end) to see the values
+    #
     # for net in fm.net_array.keys():
     #     print("net %d: %s" % (net, ",".join([str(x.n) for x in fm.net_array[net].cells])))
     #
@@ -54,30 +57,64 @@ def test_input_routine():
     assert fm.net_array[5].blockA == 2
     assert fm.net_array[6].blockA == 2
 
+    #
+    # Block A size
+    #
     assert all(net.blockA_locked == 0 for net in fm.net_array.values())
     assert all(net.blockA_free == net.blockA for net in fm.net_array.values())
 
+    #
+    # Block B size
+    #
+    assert all(net.blockB == 0 for net in fm.net_array.values())
+    assert all(net.blockB_locked == 0 for net in fm.net_array.values())
+    assert all(net.blockB_free == net.blockB for net in fm.net_array.values())
 
+    #
+    # block structure consistency tests
+    #
+    __assert_block(fm.blockA, fm)
+    __assert_block(fm.blockB, fm)
 
-def test_compute_initial_gains():
-    PM = [[1, 1, 1, 0, 1],
-          [1, 1, 1, 1, 0],
-          [1, 1, 1, 0, 1],
-          [0, 1, 0, 1, 1],
-          [1, 0, 1, 1, 1]]
-
-    PM = np.array(PM, dtype="b1", order='C')
-
-    fm = FiducciaMattheyses()
-    fm.input_routine(PM)
-
-    fm.compute_initial_gains()
-
+    #
+    # initial gains
+    #
     assert fm.cell_array[0].gain == -3
     assert fm.cell_array[1].gain == -3
     assert fm.cell_array[2].gain == -3
     assert fm.cell_array[3].gain == -2
     assert fm.cell_array[4].gain == -3
+
+
+def __assert_block(block: Block, fm: FiducciaMattheyses):
+    for i in range(len(block.bucket_array.array)):
+        l = block.bucket_array.array[i]
+        for cell in l:
+            assert isinstance(cell, Cell)
+            assert cell.gain == i - fm.pmax
+            for net in cell.nets:
+                assert net.blockA == net.blockA_free + net.blockA_locked
+                assert net.blockB == net.blockB_free + net.blockB_locked
+                free = 0
+                locked = 0
+                for c in net.blockA_cells:
+                    assert c in fm.blockA.cells
+                    if c.locked is True:
+                        locked += 1
+                    elif c.locked is False:
+                        free += 1
+                assert net.blockA_free == free
+                assert net.blockA_locked == locked
+                free = 0
+                locked = 0
+                for c in net.blockB_cells:
+                    assert c in fm.blockB.cells
+                    if c.locked is True:
+                        locked += 1
+                    elif c.locked is False:
+                        free += 1
+                assert net.blockB_free == free
+                assert net.blockB_locked == locked
 
 
 def test_initial_pass():
@@ -92,9 +129,18 @@ def test_initial_pass():
     fm = FiducciaMattheyses()
     fm.input_routine(PM)
 
+    #
+    # block structure consistency tests
+    #
+    __assert_block(fm.blockA, fm)
+    __assert_block(fm.blockB, fm)
+
     assert fm.cutset == 0
     fm.initial_pass()
     assert fm.cutset != 0
+
+    __assert_block(fm.blockA, fm)
+    __assert_block(fm.blockB, fm)
 
     assert len(fm.blockA.cells) == fm.blockA.size
     assert len(fm.blockB.cells) == fm.blockB.size

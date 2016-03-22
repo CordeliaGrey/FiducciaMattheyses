@@ -5,9 +5,12 @@ __author__ = 'gm'
 
 
 def test_bucket_array():
-
     pmax = 5
-    ba = BucketArray(pmax)
+    fm = FiducciaMattheyses()
+    fm.blockA = Block("A", pmax, fm)
+    fm.blockB = Block("B", pmax, fm)
+
+    ba = fm.blockA.bucket_array
 
     assert len(ba.array) == 11
     assert ba.max_gain == -5
@@ -28,6 +31,13 @@ def test_bucket_array():
     n.add_cell(c1)
     n.add_cell(c2)
     n.add_cell(c3)
+
+    #
+    # this happens automatically in input routine, do it manually here
+    #
+    c1.block = fm.blockA
+    c2.block = fm.blockA
+    c3.block = fm.blockA
 
     assert len(ba[1]) == 0
 
@@ -96,6 +106,11 @@ def test_bucket_array():
 
 
 def test_cell_net():
+    pmax = 5
+    fm = FiducciaMattheyses()
+    fm.blockA = Block("A", pmax, fm)
+    fm.blockB = Block("B", pmax, fm)
+
     c1 = Cell(0, "A")
     c1.gain = -1
 
@@ -116,6 +131,13 @@ def test_cell_net():
     c2.add_net(n1)
     c2.add_net(n2)
     c3.add_net(n2)
+
+    #
+    # this happens automatically in input routine, do it manually here
+    #
+    c1.block = fm.blockA
+    c2.block = fm.blockA
+    c3.block = fm.blockA
 
     assert len(c1.nets) == 1
     assert len(c2.nets) == 2
@@ -175,6 +197,13 @@ def test_block():
     c2.add_net(n1)
     c2.add_net(n2)
     c3.add_net(n2)
+
+    #
+    # this happens automatically in input routine, do it manually here
+    #
+    c1.block = fm.blockA
+    c2.block = fm.blockA
+    c3.block = fm.blockA
 
     b = fm.blockA
     b.add_cell(c1)

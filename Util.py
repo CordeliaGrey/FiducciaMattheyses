@@ -2,15 +2,14 @@ __author__ = 'gm'
 
 
 class Cell:
-    def __init__(self, n: int, block: str):
+    def __init__(self, n: int, block):
         assert n >= 0
-        assert isinstance(block, str)
-        assert block == "A" or block == "B"
         self.n = n  # the cell number
         self.pins = 0  # number of nets
         self.nets = set()  # nets that this cell is part of
         self.gain = 0  # the gain of this cell
         self.block = block  # the block this cell belongs to, "A" or "B"
+        """:type block Block"""
         self.locked = False  # whether this cell locked or free to move
 
     def add_net(self, net):
@@ -18,16 +17,18 @@ class Cell:
             self.nets.add(net)
             self.pins += 1
 
+
+
     def adjust_net_distribution(self):
         """
         call this after the cell moved to its complementary block, to adjust each nets distribution (each net that
         contains this cell)
         """
         for net in self.nets:
-            if self.block == "A":  # "A" after move, so the cell moved to "A"
+            if self.block.name == "A":  # "A" after move, so the cell moved to "A"
                 net.cell_to_blockA(self)
             else:
-                assert self.block == "B"  # "B" after move, so the cell moved to "B"
+                assert self.block.name == "B"  # "B" after move, so the cell moved to "B"
                 net.cell_to_blockB(self)
 
     def lock(self):
@@ -35,11 +36,11 @@ class Cell:
             return
         self.locked = True
         for net in self.nets:
-            if self.block == "A":
+            if self.block.name == "A":
                 net.blockA_locked += 1
                 net.blockA_free -= 1
             else:
-                assert self.block == "B"
+                assert self.block.name == "B"
                 net.blockB_locked += 1
                 net.blockB_free -= 1
 
@@ -48,11 +49,11 @@ class Cell:
             return
         self.locked = False
         for net in self.nets:
-            if self.block == "A":
+            if self.block.name == "A":
                 net.blockA_locked -= 1
                 net.blockA_free += 1
             else:
-                assert self.block == "B"
+                assert self.block.name == "B"
                 net.blockB_locked -= 1
                 net.blockB_free += 1
 
@@ -62,7 +63,7 @@ class Net:
         assert n >= 0
         self.n = n  # the net number
         self.cells = set()  # the cells that this net contains
-        self.blockA_ref = None  # a reference to the block A object  #  TODO not needed ?
+        self.blockA_ref = None  # a reference to the block A object
         """:type blockA_ref Block"""
         self.blockB_ref = None  # a reference to the block B object
         """:type blockB_ref Block"""
@@ -221,7 +222,7 @@ class Block:
         self.cells.remove(cell)
         block.cells.append(cell)
         assert self.size >= 0
-        cell.block = block.name
+        cell.block = block
         self.bucket_array.move_cell(cell, old_gain, block.bucket_array)
         self.__adjust_gains_after_move(cell)
 
@@ -231,27 +232,27 @@ class Block:
     def __adjust_gains_before_move(self, cell: Cell):
         assert isinstance(cell, Cell)
         for net in cell.nets:
-            if cell.block == "A":
+            if cell.block.name == "A":
                 LT = net.blockB_locked
                 FT = net.blockB_free
             else:
-                assert cell.block == "B"
+                assert cell.block.name == "B"
                 LT = net.blockA_locked
                 FT = net.blockA_free
             if LT == 0:
                 if FT == 0:
                     net.inc_gains_of_free_cells()
                 elif FT == 1:
-                    net.dec_gain_Tcell("A" if cell.block == "B" else "B")
+                    net.dec_gain_Tcell("A" if cell.block.name == "B" else "B")
 
     def __adjust_gains_after_move(self, cell: Cell):
         assert isinstance(cell, Cell)
         for net in cell.nets:
-            if cell.block == "A":
+            if cell.block.name == "A":
                 LF = net.blockA_locked
                 FF = net.blockA_free
             else:
-                assert cell.block == "B"
+                assert cell.block.name == "B"
                 LF = net.blockB_locked
                 FF = net.blockB_free
             if LF == 0:
@@ -278,6 +279,13 @@ class BucketArray:
         assert -self.pmax <= i <= self.pmax
         i += self.pmax
         return self.array[i]
+
+    def move_cell_to_complementary_block(self):
+        """
+        move specified cell to its complementary block (in its free cell list) and lock it
+        """
+        pass
+        # TODO implement
 
     def move_cell(self, cell: Cell, old_gain: int, to_bucket_array):
         """

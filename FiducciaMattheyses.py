@@ -48,6 +48,7 @@ class FiducciaMattheyses:
         self.blockB = Block("B", self.pmax, self)
 
         for cell in self.cell_array.values():
+            cell.block = self.blockA
             self.blockA.add_cell(cell)
         for net in self.net_array.values():
             net.blockA_ref = self.blockA
@@ -134,11 +135,11 @@ class FiducciaMattheyses:
         balance partition, if this is the case return abs(|A| - rW), else None. The closer this value is to zero
         the closer the partition is to the expected (based on ratio r)
         """
-        if cell.block == "A":
+        if cell.block.name == "A":
             A = self.blockA.size - 1
             B = self.blockB.size + 1
         else:
-            assert cell.block == "B"
+            assert cell.block.name == "B"
             A = self.blockA.size + 1
             B = self.blockB.size - 1
         W = A + B
@@ -168,18 +169,17 @@ class FiducciaMattheyses:
                 continue
             cell.gain = 0
             for net in cell.nets:
-                if cell.block == "A":
+                if cell.block.name == "A":
                     if net.blockA == 1:
                         cell.gain += 1
                     if net.blockB == 0:
                         cell.gain -= 1
                 else:
-                    assert cell.block == "B"
+                    assert cell.block.name == "B"
                     if net.blockB == 1:
                         cell.gain += 1
                     if net.blockA == 0:
                         cell.gain -= 1
-
 
     def initial_pass(self):
         """
@@ -191,7 +191,7 @@ class FiducciaMattheyses:
         assert self.blockA.size >= self.blockB.size
         while not self.is_partition_balanced():
             bcell = self.blockA.get_candidate_base_cell()
-            assert bcell.block == "A"  # all cells initially belong to block A
+            assert bcell.block.name == "A"  # all cells initially belong to block A
             self.blockA.move_cell(bcell, self.blockB)
 
     def perform_pass(self):
@@ -209,10 +209,10 @@ class FiducciaMattheyses:
         self.blockA.initialize()
         self.blockB.initialize()
         while bcell is not None:
-            if bcell.block == "A":
+            if bcell.block.name == "A":
                 self.blockA.move_cell(bcell, self.blockB)
             else:
-                assert bcell.block == "B"
+                assert bcell.block.name == "B"
                 self.blockB.move_cell(bcell, self.blockA)
             if self.cutset < best_cutset:
                 best_cutset = self.cutset
