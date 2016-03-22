@@ -25,12 +25,14 @@ class Cell:
         """
         for net in self.nets:
             if self.block == "A":  # "A" after move, so the cell moved to "A"
-                net.cell_to_blockA()
+                net.cell_to_blockA(self)
             else:
                 assert self.block == "B"  # "B" after move, so the cell moved to "B"
-                net.cell_to_blockB()
+                net.cell_to_blockB(self)
 
     def lock(self):
+        if self.locked is True:
+            return
         self.locked = True
         for net in self.nets:
             if self.block == "A":
@@ -42,6 +44,8 @@ class Cell:
                 net.blockB_free -= 1
 
     def unlock(self):
+        if self.locked is False:
+            return
         self.locked = False
         for net in self.nets:
             if self.block == "A":
@@ -58,7 +62,7 @@ class Net:
         assert n >= 0
         self.n = n  # the net number
         self.cells = set()  # the cells that this net contains
-        self.blockA_ref = None  # a reference to the block A object
+        self.blockA_ref = None  # a reference to the block A object  #  TODO not needed ?
         """:type blockA_ref Block"""
         self.blockB_ref = None  # a reference to the block B object
         """:type blockB_ref Block"""
@@ -68,6 +72,8 @@ class Net:
         self.blockB_locked = 0  # number of cells in this net that belong to block B and are locked
         self.blockA_free = 0    # number of cells in this net that belong to block A and are not locked
         self.blockB_free = 0    # number of cells in this net that belong to block B and are not locked
+        self.blockA_cells = []  # the cells that belong to this net and are part of block A
+        self.blockB_cells = []  # the cells that belong to this net and are part of block B
         self.cut = False        # whether this net is cut. This means that it has cells both in block A and B
 
     def add_cell(self, cell):
@@ -79,10 +85,12 @@ class Net:
             if cell.block == "A":
                 self.blockA += 1
                 self.blockA_free += 1
+                self.blockA_cells.append(cell)
             else:
                 assert cell.block == "B"
                 self.blockB += 1
                 self.blockB_free += 1
+                self.blockB_cells.append(cell)
 
     def __update_cut_state(self):
         new_cutstate = self.blockA != 0 and self.blockB != 0
@@ -92,7 +100,7 @@ class Net:
             else:
                 self.blockA_ref.fm.cutset -= 1
 
-    def cell_to_blockA(self):
+    def cell_to_blockA(self, cell):
         """
         call this when a cell moved to blockA, increments blockA and decrements blockB
         """
@@ -100,6 +108,8 @@ class Net:
         self.blockA_free += 1
         self.blockB -= 1
         self.blockB_free -= 1
+        self.blockB_cells.remove(cell)
+        self.blockA_cells.append(cell)
         self.__update_cut_state()
         assert self.blockA >= 0
         assert self.blockA_free >= 0
@@ -108,7 +118,7 @@ class Net:
         assert self.blockA_free + self.blockA_locked == self.blockA
         assert self.blockB_free + self.blockB_locked == self.blockB
 
-    def cell_to_blockB(self):
+    def cell_to_blockB(self, cell):
         """
         call this when a cell moved to blockB, increments blockB and decrements blockA
         """
@@ -116,6 +126,8 @@ class Net:
         self.blockB_free += 1
         self.blockA -= 1
         self.blockA_free -= 1
+        self.blockA_cells.remove(cell)
+        self.blockB_cells.append(cell)
         self.__update_cut_state()
         assert self.blockA >= 0
         assert self.blockA_free >= 0
@@ -141,13 +153,13 @@ class Net:
 
         if to_side == "A":
             assert self.blockA_free == 1
-            assert len(self.blockA_ref.cells) == self.blockA_free + self.blockA_locked
-            self.blockA_ref.cells[0].gain -= 1
+            assert len(self.blockA_cells) == 1
+            self.blockA_cells[0].gain -= 1
         else:
             assert to_side == "B"
             assert self.blockB_free == 1
-            assert len(self.blockB_ref.cells) == self.blockB_free + self.blockB_locked
-            self.blockB_ref.cells[0].gain -= 1  # FIXME this is incorrect, contains also locked cells
+            assert len(self.blockB_cells) == 1
+            self.blockB_cells[0].gain -= 1
 
     def dec_gains_of_free_cells(self):
         """

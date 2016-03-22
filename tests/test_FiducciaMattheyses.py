@@ -46,6 +46,18 @@ def test_input_routine():
 
     assert fm.pmax == 3
 
+    assert fm.net_array[0].blockA == 2
+    assert fm.net_array[1].blockA == 2
+    assert fm.net_array[2].blockA == 2
+    assert fm.net_array[3].blockA == 2
+    assert fm.net_array[4].blockA == 2
+    assert fm.net_array[5].blockA == 2
+    assert fm.net_array[6].blockA == 2
+
+    assert all(net.blockA_locked == 0 for net in fm.net_array.values())
+    assert all(net.blockA_free == net.blockA for net in fm.net_array.values())
+
+
 
 def test_compute_initial_gains():
     PM = [[1, 1, 1, 0, 1],

@@ -176,11 +176,15 @@ def test_block():
     c2.add_net(n2)
     c3.add_net(n2)
 
-    b = fm.blockB
+    b = fm.blockA
     b.add_cell(c1)
     b.add_cell(c2)
     b.add_cell(c3)
 
+    for c in n1.cells:
+        c.lock()
+    for c in n2.cells:
+        c.lock()
     b.initialize()
 
     assert b.size == 3
@@ -188,8 +192,14 @@ def test_block():
     assert len(b.bucket_array[-2]) == 1
     assert b.get_candidate_base_cell() == c1
 
-    b2 = Block("B", pmax, FiducciaMattheyses())
+    b2 = fm.blockB
 
+    assert n1.blockA == 2
+    assert n1.blockB == 0
+    assert len(n1.blockA_cells) == 2
+    assert n1.blockA_cells == [c1, c2]
+    assert n1.blockA_free == 2
+    assert n1.blockA_locked == 0
     assert fm.cutset == 0
     b.move_cell(c1, b2)
     assert fm.cutset == 1

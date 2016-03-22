@@ -102,9 +102,9 @@ class FiducciaMattheyses:
         if a is None and b is None:
             return None
         elif a is None and b is not None:
-            return b
+            return b[0]
         elif a is not None and b is None:
-            return a
+            return a[0]
         else:  # both not None
             bfactor_a = a[1]
             bfactor_b = b[1]
@@ -161,18 +161,25 @@ class FiducciaMattheyses:
 
     def compute_initial_gains(self):
         """
-        computes initial gains for all free cells, assumes that all cells initially belong to block A and are all free
+        computes initial gains for all free cells
         """
         for cell in self.cell_array.values():
-            assert cell.block == "A"
-            assert cell.locked is False
+            if cell.locked is True:
+                continue
             cell.gain = 0
             for net in cell.nets:
-                # FROM block is "A" since all cells initially belong to "A"
-                if net.blockA == 1:
-                    cell.gain += 1
-                if net.blockB == 0:
-                    cell.gain -= 1
+                if cell.block == "A":
+                    if net.blockA == 1:
+                        cell.gain += 1
+                    if net.blockB == 0:
+                        cell.gain -= 1
+                else:
+                    assert cell.block == "B"
+                    if net.blockB == 1:
+                        cell.gain += 1
+                    if net.blockA == 0:
+                        cell.gain -= 1
+
 
     def initial_pass(self):
         """
@@ -181,14 +188,11 @@ class FiducciaMattheyses:
         assert self.blockA is not None
         assert self.blockB is not None
 
-        self.compute_initial_gains()
-
         assert self.blockA.size >= self.blockB.size
         while not self.is_partition_balanced():
             bcell = self.blockA.get_candidate_base_cell()
             assert bcell.block == "A"  # all cells initially belong to block A
             self.blockA.move_cell(bcell, self.blockB)
-        self.blockB.initialize()
 
     def perform_pass(self):
         """
@@ -201,6 +205,9 @@ class FiducciaMattheyses:
         best_blockA = None
         best_blockB = None
         bcell = self.get_base_cell()
+        self.compute_initial_gains()
+        self.blockA.initialize()
+        self.blockB.initialize()
         while bcell is not None:
             if bcell.block == "A":
                 self.blockA.move_cell(bcell, self.blockB)
