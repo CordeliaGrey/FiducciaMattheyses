@@ -152,7 +152,7 @@ class FiducciaMattheyses:
         check the balance criterion and return true if the current partition is balanced
         """
         W = self.blockA.size + self.blockB.size
-        smax = self.pmax
+        smax = 1  # self.pmax
         r = FiducciaMattheyses.r
         A = self.blockA.size
         return r * W - smax <= A <= r * W + smax
