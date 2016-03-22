@@ -11,13 +11,13 @@ class Cell:
         self.block = block  # the block this cell belongs to, "A" or "B"
         """:type block Block"""
         self.locked = False  # whether this cell locked or free to move
+        self.bucket = None  # reference to the bucket this cell belongs to
+        """:type bucket list"""
 
     def add_net(self, net):
         if net not in self.nets:
             self.nets.add(net)
             self.pins += 1
-
-
 
     def adjust_net_distribution(self):
         """
@@ -324,6 +324,7 @@ class BucketArray:
         assert -self.pmax <= cell.gain <= self.pmax
 
         self[cell.gain].append(cell)
+        cell.bucket = self[cell.gain]
         if cell.gain > self.max_gain:
             self.max_gain = cell.gain
 

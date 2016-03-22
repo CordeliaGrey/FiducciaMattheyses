@@ -92,6 +92,7 @@ def __assert_block(block: Block, fm: FiducciaMattheyses):
         for cell in l:
             assert isinstance(cell, Cell)
             assert cell.gain == i - fm.pmax
+            assert cell.bucket == l
             for net in cell.nets:
                 assert net.blockA == net.blockA_free + net.blockA_locked
                 assert net.blockB == net.blockB_free + net.blockB_locked
