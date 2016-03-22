@@ -1,5 +1,6 @@
 from Util import *
 from FiducciaMattheyses import FiducciaMattheyses
+from tests.test_FiducciaMattheyses import assert_block
 
 __author__ = 'gm'
 
@@ -167,6 +168,7 @@ def test_cell_net():
 def test_block():
     pmax = 5
     fm = FiducciaMattheyses()
+    fm.pmax = 5
     fm.blockA = Block("A", pmax, fm)
     fm.blockB = Block("B", pmax, fm)
 
@@ -215,6 +217,8 @@ def test_block():
         c.lock()
     b.initialize()
 
+    assert_block(b, fm)
+
     assert b.size == 3
     assert len(b.bucket_array[-1]) == 2
     assert len(b.bucket_array[-2]) == 1
@@ -231,6 +235,8 @@ def test_block():
     assert fm.cutset == 0
     b.move_cell(c1)
     assert fm.cutset == 1
+
+    assert_block(b, fm)
 
     assert b.size == 2
     assert b2.size == 1

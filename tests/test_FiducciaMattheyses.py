@@ -73,8 +73,8 @@ def test_input_routine():
     #
     # block structure consistency tests
     #
-    __assert_block(fm.blockA, fm)
-    __assert_block(fm.blockB, fm)
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
 
     #
     # initial gains
@@ -86,7 +86,7 @@ def test_input_routine():
     assert fm.cell_array[4].gain == -3
 
 
-def __assert_block(block: Block, fm: FiducciaMattheyses):
+def assert_block(block: Block, fm: FiducciaMattheyses):
     for i in range(len(block.bucket_array.array)):
         l = block.bucket_array.array[i]
         for cell in l:
@@ -133,15 +133,15 @@ def test_initial_pass():
     #
     # block structure consistency tests
     #
-    __assert_block(fm.blockA, fm)
-    __assert_block(fm.blockB, fm)
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
 
     assert fm.cutset == 0
     fm.initial_pass()
     assert fm.cutset != 0
 
-    __assert_block(fm.blockA, fm)
-    __assert_block(fm.blockB, fm)
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
 
     assert len(fm.blockA.cells) == fm.blockA.size
     assert len(fm.blockB.cells) == fm.blockB.size

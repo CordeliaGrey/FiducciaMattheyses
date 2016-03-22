@@ -113,9 +113,14 @@ class Net:
         call this when a cell moved to blockA, increments blockA and decrements blockB
         """
         self.blockA += 1
-        self.blockA_free += 1
         self.blockB -= 1
-        self.blockB_free -= 1
+        if cell.locked is True:
+            self.blockA_locked += 1
+            self.blockB_locked += 1
+        else:
+            self.blockA_free += 1
+            self.blockB_free -= 1
+
         self.blockB_cells.remove(cell)
         self.blockA_cells.append(cell)
         self.__update_cut_state()
@@ -131,9 +136,13 @@ class Net:
         call this when a cell moved to blockB, increments blockB and decrements blockA
         """
         self.blockB += 1
-        self.blockB_free += 1
         self.blockA -= 1
-        self.blockA_free -= 1
+        if cell.locked is True:
+            self.blockB_locked += 1
+            self.blockA_locked -= 1
+        else:
+            self.blockB_free += 1
+            self.blockA_free -= 1
         self.blockA_cells.remove(cell)
         self.blockB_cells.append(cell)
         self.__update_cut_state()
@@ -289,7 +298,7 @@ class Block:
                 if FF == 0:
                     net.dec_gains_of_free_cells()
                 elif FF == 1:
-                    net.inc_gain_Fcell("A" if cell.block == "B" else "B")
+                    net.inc_gain_Fcell("A" if cell.block.name == "B" else "B")
 
     def initialize(self):
         """
