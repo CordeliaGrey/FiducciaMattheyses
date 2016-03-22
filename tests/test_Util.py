@@ -66,7 +66,9 @@ def test_bucket_array():
     assert c1 in ba[c1.gain]
     ba2 = BucketArray(pmax)
     assert c1.locked is False
-    ba.move_cell(c1, 3, ba2)
+    old_gain = c1.gain
+    c1.gain = 3
+    ba.move_cell(c1, old_gain, ba2)
     assert c1.locked is True
 
     assert len(ba.free_cell_list) == 0
@@ -77,7 +79,9 @@ def test_bucket_array():
     assert ba.get_candidate_base_cell() == c3
 
     assert c3.locked is False
-    ba.move_cell(c3, 0, ba2)
+    old_gain = c3.gain
+    c3.gain = 0
+    ba.move_cell(c3, old_gain, ba2)
     assert c3.locked is True
     assert len(ba2.free_cell_list) == 2
     assert c3.gain == 0

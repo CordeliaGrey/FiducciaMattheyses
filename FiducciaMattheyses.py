@@ -1,5 +1,6 @@
 import numpy as np
 from Util import Cell, Net, Block
+import copy
 
 __author__ = 'gm'
 
@@ -90,10 +91,10 @@ class FiducciaMattheyses:
             net_obj = self.net_array[net]
         return net_obj
 
-    def get_base_cell(self):
+    def get_base_cell(self) -> Cell:
         """
         get the base cell. That is a cell with maximum gain that also gives the best balance if moved to its
-        complementary block
+        complementary block or null if no such cell exists
         """
         a = self.get_candidate_base_cell_from_block(self.blockA)
         b = self.get_candidate_base_cell_from_block(self.blockB)
@@ -110,7 +111,7 @@ class FiducciaMattheyses:
             if bfactor_a < bfactor_b:
                 return a[0]
             else:
-                return a[1]
+                return b[0]
 
     def get_candidate_base_cell_from_block(self, block: Block):  # -> Tuple[Cell, float]
         """
@@ -188,3 +189,35 @@ class FiducciaMattheyses:
             assert bcell.block == "A"  # all cells initially belong to block A
             self.blockA.move_cell(bcell, self.blockB)
         self.blockB.initialize()
+
+    def perform_pass(self):
+        """
+        perform a full pass, until no more cells are able to move or the balance criterion does not let any more moves.
+        the input_routine() and initial_pass() functions must have been called first
+        """
+        best_cutset = 999999999999
+        best_cell_array = {}
+        best_net_array = {}
+        best_blockA = None
+        best_blockB = None
+        bcell = self.get_base_cell()
+        while bcell is not None:
+            if bcell.block == "A":
+                self.blockA.move_cell(bcell, self.blockB)
+            else:
+                assert bcell.block == "B"
+                self.blockB.move_cell(bcell, self.blockA)
+            if self.cutset < best_cutset:
+                best_cutset = self.cutset
+                best_cell_array = copy.deepcopy(self.cell_array)
+                best_net_array = copy.deepcopy(self.net_array)
+                best_blockA = copy.deepcopy(self.blockA)
+                best_blockB = copy.deepcopy(self.blockB)
+            bcell = self.get_base_cell()
+        return best_cutset, best_cell_array, best_net_array, best_blockA, best_blockB
+
+
+    def find_mincut(self):
+        """
+        perform multiple passes until no more improvements are given, keep the best pass
+        """

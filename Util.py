@@ -141,13 +141,13 @@ class Net:
 
         if to_side == "A":
             assert self.blockA_free == 1
-            assert len(self.blockA_ref.cells) == 1
+            assert len(self.blockA_ref.cells) == self.blockA_free + self.blockA_locked
             self.blockA_ref.cells[0].gain -= 1
         else:
             assert to_side == "B"
             assert self.blockB_free == 1
-            assert len(self.blockB_ref.cells) == 1
-            self.blockB_ref.cells[0].gain -= 1
+            assert len(self.blockB_ref.cells) == self.blockB_free + self.blockB_locked
+            self.blockB_ref.cells[0].gain -= 1  # FIXME this is incorrect, contains also locked cells
 
     def dec_gains_of_free_cells(self):
         """
@@ -203,14 +203,14 @@ class Block:
         move the given cell to the specified block, this should always be its complementary block
         """
         assert isinstance(cell, Cell)
+        old_gain = cell.gain
+        self.__adjust_gains_before_move(cell)
         self.size -= 1
         self.cells.remove(cell)
         block.cells.append(cell)
         assert self.size >= 0
         cell.block = block.name
-
-        self.__adjust_gains_before_move(cell)
-        self.bucket_array.move_cell(cell, cell.gain, block.bucket_array)
+        self.bucket_array.move_cell(cell, old_gain, block.bucket_array)
         self.__adjust_gains_after_move(cell)
 
         block.size += 1
@@ -267,21 +267,22 @@ class BucketArray:
         i += self.pmax
         return self.array[i]
 
-    def move_cell(self, cell: Cell, to_gain: int, to_bucket_array):
+    def move_cell(self, cell: Cell, old_gain: int, to_bucket_array):
         """
-        move a cell from its bucket to the free cell list of some other bucket array, also adjusting its gain
+        move a cell from its bucket to the free cell list of some other bucket array. The cell's gain is already
+        updated at this point by the "before move" adjustments. Old_gain is the cell's gain before that
+        adjustment and thus also reflects the index this cell resides in the bucket array
         """
         assert isinstance(cell, Cell)
-        assert isinstance(to_gain, int)
+        assert isinstance(old_gain, int)
         assert isinstance(to_bucket_array, BucketArray)
         assert cell.locked is False
 
         assert -self.pmax <= cell.gain <= self.pmax
-        assert -self.pmax <= to_gain <= self.pmax
-        self[cell.gain].remove(cell)
-        if len(self[cell.gain]) == 0:
+        assert -self.pmax <= old_gain <= self.pmax
+        self[old_gain].remove(cell)
+        if len(self[old_gain]) == 0:
             self.decrement_max_gain()
-        cell.gain = to_gain
         cell.lock()
         to_bucket_array.add_to_free_cell_list(cell)
 

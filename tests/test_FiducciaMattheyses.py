@@ -80,8 +80,6 @@ def test_initial_pass():
     fm = FiducciaMattheyses()
     fm.input_routine(PM)
 
-    fm.compute_initial_gains()
-
     assert fm.cutset == 0
     fm.initial_pass()
     assert fm.cutset != 0
@@ -97,4 +95,21 @@ def test_initial_pass():
     print(fm.blockA.size)
     print(fm.blockB.size)
 
-    assert False
+    # assert False
+
+
+def test_perform_pass():
+    PM = [[1, 1, 1, 0, 1],
+          [1, 1, 1, 1, 0],
+          [1, 1, 1, 0, 1],
+          [0, 1, 0, 1, 1],
+          [1, 0, 1, 1, 1]]
+
+    PM = np.array(PM, dtype="b1", order='C')
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
+    fm.initial_pass()
+    fm.perform_pass()
+
+    assert True
