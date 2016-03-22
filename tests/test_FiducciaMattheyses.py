@@ -147,9 +147,10 @@ def test_initial_pass():
     assert len(fm.blockB.cells) == fm.blockB.size
 
     assert len(fm.blockA.bucket_array.free_cell_list) == 0
-    assert len(fm.blockB.bucket_array.free_cell_list) == 0
+    assert len(fm.blockB.bucket_array.free_cell_list) != 0
 
-    assert all(cell.locked is False for cell in fm.cell_array.values())
+    assert all(cell.locked is False for cell in fm.blockA.cells)
+    assert all(cell.locked is True for cell in fm.blockB.cells)
 
     print(fm.blockA.size)
     print(fm.blockB.size)
