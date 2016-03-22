@@ -199,6 +199,10 @@ def test_block():
     c1.block = fm.blockA
     c2.block = fm.blockA
     c3.block = fm.blockA
+    n1.blockA_ref = fm.blockA
+    n1.blockB_ref = fm.blockB
+    n2.blockA_ref = fm.blockA
+    n2.blockB_ref = fm.blockB
 
     b = fm.blockA
     b.add_cell(c1)

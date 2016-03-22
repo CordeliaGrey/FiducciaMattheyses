@@ -163,14 +163,16 @@ class Net:
         if to_side == "A":
             assert self.blockA_free == 1
             assert len(self.blockA_cells) == 1
-            self.blockA_cells[0].gain -= 1
-            self.blockA_cells[0].yank()
+            cell = self.blockA_cells[0]
+            cell.gain -= 1
+            cell.yank()
         else:
             assert to_side == "B"
             assert self.blockB_free == 1
             assert len(self.blockB_cells) == 1
-            self.blockB_cells[0].gain -= 1
-            self.blockB_cells[0].yank()
+            cell = self.blockB_cells[0]
+            cell.gain -= 1
+            cell.yank()
 
     def dec_gains_of_free_cells(self):
         """
@@ -191,14 +193,16 @@ class Net:
         if from_side == "A":
             assert self.blockA_free == 1
             assert len(self.blockA_ref.cells) == 1
-            self.blockA_ref.cells[0].gain += 1
-            self.blockA_ref.cells[0].yank()
+            cell = self.blockA_ref.cells[0]
+            cell.gain += 1
+            cell.yank()
         else:
             assert from_side == "B"
             assert self.blockB_free == 1
             assert len(self.blockB_ref.cells) == 1
-            self.blockB_ref.cells[0].gain += 1
-            self.blockB_ref.cells[0].yank()
+            cell = self.blockB_ref.cells[0]
+            cell.gain += 1
+            cell.yank()
 
 
 class Block:
@@ -236,37 +240,24 @@ class Block:
         self.cells.remove(cell)
         self.bucket_array.remove_cell(cell)
 
-
     def move_cell(self, cell: Cell):
         """
         move the given cell to its complementary block
         """
         assert isinstance(cell, Cell)
         comp_block = cell.block.fm.blockA if cell.block.name == "B" else cell.block.fm.blockB
-        #
-        # Adjust gains and yank cells
-        #
-        self.__adjust_gains_before_move(cell)
-
-        #
+        # lock cell
+        cell.lock()
         # Remove cell from this block
-        #
         self.remove_cell(cell)
-
-        #
         # Add cell to complementary block
-        #
         comp_block.add_cell(cell)
-
-        #
-        # Adjust gains and yank cells
-        #
-        self.__adjust_gains_after_move(cell)
-
-        #
-        # Adjust the distribution of this cell's nets
-        #
+        # Adjust gains and yank cells before the move
+        self.__adjust_gains_before_move(cell)
+        # Adjust the distribution of this cell's nets to reflect the move
         cell.adjust_net_distribution()
+        # Adjust gains and yank cells after the move
+        self.__adjust_gains_after_move(cell)
 
     def __adjust_gains_before_move(self, cell: Cell):
         assert isinstance(cell, Cell)
@@ -288,12 +279,12 @@ class Block:
         assert isinstance(cell, Cell)
         for net in cell.nets:
             if cell.block.name == "A":
-                LF = net.blockA_locked
-                FF = net.blockA_free
-            else:
-                assert cell.block.name == "B"
                 LF = net.blockB_locked
                 FF = net.blockB_free
+            else:
+                assert cell.block.name == "B"
+                LF = net.blockA_locked
+                FF = net.blockA_free
             if LF == 0:
                 if FF == 0:
                     net.dec_gains_of_free_cells()
@@ -324,7 +315,6 @@ class BucketArray:
         remove specified cell from this bucket list
         """
         assert isinstance(cell, Cell)
-        assert cell.locked is False
         cell.bucket.remove(cell)
         if self[self.max_gain] == cell.bucket and len(cell.bucket) == 0:
             self.decrement_max_gain()
