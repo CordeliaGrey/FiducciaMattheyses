@@ -245,3 +245,105 @@ def test_block():
 
     b2.initialize()
     assert len(b2.bucket_array[c1.gain]) == 1
+
+
+def test_snapshots():
+    pmax = 5
+    fm = FiducciaMattheyses()
+    fm.pmax = 5
+    fm.blockA = Block("A", pmax, fm)
+    fm.blockB = Block("B", pmax, fm)
+
+    c1 = Cell(0, "A")
+    c1.gain = -1
+
+    c2 = Cell(1, "A")
+    c2.gain = -2
+
+    c3 = Cell(2, "A")
+    c3.gain = -1
+
+    n1 = Net(0)
+    n1.add_cell(c1)
+    n1.add_cell(c2)
+    n1.blockA_ref = fm.blockA
+    n2 = Net(1)
+    n2.blockA_ref = fm.blockA
+    n2.add_cell(c2)
+    n2.add_cell(c3)
+
+    c1.add_net(n1)
+    c2.add_net(n1)
+    c2.add_net(n2)
+    c3.add_net(n2)
+
+    #
+    # this happens automatically in input routine, do it manually here
+    #
+    c1.block = fm.blockA
+    c2.block = fm.blockA
+    c3.block = fm.blockA
+    n1.blockA_ref = fm.blockA
+    n1.blockB_ref = fm.blockB
+    n2.blockA_ref = fm.blockA
+    n2.blockB_ref = fm.blockB
+
+    b = fm.blockA
+    b.add_cell(c1)
+    b.add_cell(c2)
+    b.add_cell(c3)
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    fm.blockA.initialize()
+
+    # c1.take_snapshot()
+    # c1.load_snapshot()
+    # n1.take_snapshot()
+    # n1.load_snapshot()
+    # fm.blockA.take_snapshot()
+    # fm.blockA.load_snapshot()
+    fm.take_snapshot()
+    fm.load_snapshot()
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    fm.blockA.move_cell(c1)
+    fm.blockA.move_cell(c3)
+
+    fm.blockB.initialize()
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    fm.take_snapshot()
+    fm.load_snapshot()
+
+    fm.blockA.move_cell(c2)
+
+    fm.take_snapshot()
+    fm.load_snapshot()
+
+    fm.blockB.move_cell(c1)
+
+    fm.take_snapshot()
+    fm.load_snapshot()
+
+    fm.blockB.move_cell(c3)
+
+    fm.take_snapshot()
+    fm.load_snapshot()
+
+    fm.blockA.initialize()
+
+    fm.take_snapshot()
+    fm.load_snapshot()
+
+    fm.blockB.initialize()
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    assert True

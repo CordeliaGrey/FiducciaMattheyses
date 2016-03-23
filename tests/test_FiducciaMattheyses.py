@@ -93,7 +93,8 @@ def assert_block(block: Block, fm: FiducciaMattheyses):
         for cell in l:
             assert isinstance(cell, Cell)
             assert cell.gain == i - fm.pmax
-            assert cell.bucket == l
+            assert len(cell.bucket()) == len(l)
+            assert cell.bucket() == l
             for net in cell.nets:
                 assert net.blockA == net.blockA_free + net.blockA_locked
                 assert net.blockB == net.blockB_free + net.blockB_locked
@@ -156,7 +157,7 @@ def test_initial_pass():
     print(fm.blockA.size)
     print(fm.blockB.size)
 
-    # assert False
+    assert True  # this is here for PyCharm to recognize this as a test
 
 
 def test_perform_pass():
@@ -185,9 +186,10 @@ def test_perform_pass():
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
 
+    assert True  # this is here for PyCharm to recognize this as a test
 
 def test_perform_pass_bigger():
-    # we dont care about the diagonal and values below
+    # we don't care about the diagonal and values below
     PM = [[0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
           [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -220,12 +222,8 @@ def test_perform_pass_bigger():
     fm.perform_pass()
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
+
+    assert True  # this is here for PyCharm to recognize this as a test
 
 
 def test_perform_pass_autogen():
@@ -242,7 +240,22 @@ def test_perform_pass_autogen():
 
     fm = FiducciaMattheyses()
     fm.input_routine(PM)
+    fm.initial_pass()
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
-
-    assert True
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    assert True  # this is here for PyCharm to recognize this as a test

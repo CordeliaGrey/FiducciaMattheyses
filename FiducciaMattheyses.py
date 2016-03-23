@@ -1,6 +1,6 @@
 import numpy as np
 from Util import Cell, Net, Block
-import copy
+import sys
 
 __author__ = 'gm'
 
@@ -19,6 +19,32 @@ class FiducciaMattheyses:
         self.blockB = None  # this gets initialized when input routine is called (we need to know pmax)
         """:type blockB Block"""
         self.cutset = 0  # number of sets that are cut
+        self.snapshot = None  # this will hold the state of FiducciaMattheyses at the time a snapshot is taken
+
+    def take_snapshot(self):
+        """
+        take a snapshot of the current state of FiducciaMattheyses
+        """
+        self.snapshot = self.cutset
+        self.blockA.take_snapshot()
+        self.blockB.take_snapshot()
+        for cell in self.cell_array.values():
+            cell.take_snapshot()
+        for net in self.net_array.values():
+            net.take_snapshot()
+
+    def load_snapshot(self):
+        """
+        load the saved snapshot of FiducciaMattheyses, current FiducciaMattheyses state will be lost
+        """
+        assert self.snapshot is not None
+        self.cutset = self.snapshot
+        self.blockA.load_snapshot()
+        self.blockB.load_snapshot()
+        for cell in self.cell_array.values():
+            cell.load_snapshot()
+        for net in self.net_array.values():
+            net.load_snapshot()
 
     def input_routine(self, edge_matrix: np.ndarray):
         """
@@ -178,6 +204,8 @@ class FiducciaMattheyses:
                         cell.gain += 1
                     if net.blockA == 0:
                         cell.gain -= 1
+                if cell.bucket_num is not None:  # if None then this cell is in the free cell list
+                    cell.yank()
 
     def initial_pass(self):
         """
@@ -197,11 +225,7 @@ class FiducciaMattheyses:
         perform a full pass, until no more cells are able to move or the balance criterion does not let any more moves.
         the input_routine() and initial_pass() functions must have been called first
         """
-        best_cutset = 999999999999
-        best_cell_array = {}
-        best_net_array = {}
-        best_blockA = None
-        best_blockB = None
+        best_cutset = sys.maxsize
 
         self.compute_initial_gains()
         self.blockA.initialize()
@@ -215,15 +239,14 @@ class FiducciaMattheyses:
                 self.blockB.move_cell(bcell)
             if self.cutset < best_cutset:
                 best_cutset = self.cutset
-                best_cell_array = copy.deepcopy(self.cell_array)
-                best_net_array = copy.deepcopy(self.net_array)
-                best_blockA = copy.deepcopy(self.blockA)
-                best_blockB = copy.deepcopy(self.blockB)
-            bcell = self.get_base_cell()
-        return best_cutset, best_cell_array, best_net_array, best_blockA, best_blockB
+                self.take_snapshot()
 
+            bcell = self.get_base_cell()
+        self.load_snapshot()
 
     def find_mincut(self):
         """
         perform multiple passes until no more improvements are given, keep the best pass
         """
+        pass
+        # TODO: implement

@@ -1,3 +1,5 @@
+import copy
+
 __author__ = 'gm'
 
 
@@ -11,8 +13,30 @@ class Cell:
         self.block = block  # the block this cell belongs to, "A" or "B"
         """:type block Block"""
         self.locked = False  # whether this cell locked or free to move
-        self.bucket = None  # reference to the bucket this cell belongs to
-        """:type bucket list"""
+        self.bucket_num = None  # number 0f the bucket this cell belongs to
+        """:type bucket int"""
+        self.snapshot = None  # this will hold the state of this cell at the time a snapshot is taken
+
+    def bucket(self):
+        if self.block is None:
+            return None
+        return self.block.bucket_array.array[self.bucket_num]
+
+    def take_snapshot(self):
+        """
+        take a snapshot of the current state of this cell
+        """
+        self.snapshot = self.gain, self.block, self.locked, self.bucket_num
+
+    def load_snapshot(self):
+        """
+        load the saved snapshot of this cell, current cell state will be lost
+        """
+        assert self.snapshot is not None
+        self.gain = self.snapshot[0]
+        self.block = self.snapshot[1]
+        self.locked = self.snapshot[2]
+        self.bucket_num = self.snapshot[3]
 
     def add_net(self, net):
         if net not in self.nets:
@@ -83,6 +107,29 @@ class Net:
         self.blockA_cells = []  # the cells that belong to this net and are part of block A
         self.blockB_cells = []  # the cells that belong to this net and are part of block B
         self.cut = False        # whether this net is cut. This means that it has cells both in block A and B
+        self.snapshot = None  # this will hold the state of this net at the time a snapshot is taken
+
+    def take_snapshot(self):
+        """
+        take a snapshot of the current state of this net
+        """
+        self.snapshot = self.blockA, self.blockB, self.blockA_locked, self.blockB_locked, self.blockA_free, \
+                        self.blockB_free, copy.copy(self.blockA_cells), copy.copy(self.blockB_cells), self.cut
+
+    def load_snapshot(self):
+        """
+        load the saved snapshot of this net, current net state will be lost
+        """
+        assert self.snapshot is not None
+        self.blockA = self.snapshot[0]
+        self.blockB = self.snapshot[1]
+        self.blockA_locked = self.snapshot[2]
+        self.blockB_locked = self.snapshot[3]
+        self.blockA_free = self.snapshot[4]
+        self.blockB_free = self.snapshot[5]
+        self.blockA_cells = self.snapshot[6]
+        self.blockB_cells = self.snapshot[7]
+        self.cut = self.snapshot[8]
 
     def add_cell(self, cell):
         """
@@ -223,6 +270,24 @@ class Block:
         self.cells = []  # cells that belong to this block
         self.fm = fm  # top level object FiducciaMattheyses that contains this block
         """:type fm FiducciaMattheyses.FiducciaMattheyses"""
+        self.snapshot = None  # this will hold the state of this block at the time a snapshot is taken
+
+    def take_snapshot(self):
+        """
+        take a snapshot of the current state of this block
+        """
+        self.snapshot = self.name, self.size, copy.copy(self.cells)
+        self.bucket_array.take_snapshot()
+
+    def load_snapshot(self):
+        """
+        load the saved snapshot of this block, current block state will be lost
+        """
+        assert self.snapshot is not None
+        self.name = self.snapshot[0]
+        self.size = self.snapshot[1]
+        self.cells = self.snapshot[2]
+        self.bucket_array.load_snapshot()
 
     def get_candidate_base_cell(self) -> Cell:
         """
@@ -314,6 +379,28 @@ class BucketArray:
         self.pmax = pmax
         self.array = [[] for x in range(pmax * 2 + 1)]
         self.free_cell_list = []
+        self.snapshot = None  # this will hold the state of this bucket array at the time a snapshot is taken
+
+    def take_snapshot(self):
+        """
+        take a snapshot of the current state of this bucket array
+        """
+        self.snapshot = self.max_gain, self.__dup_array(), copy.copy(self.free_cell_list)
+
+    def __dup_array(self):
+        clone = []
+        for i in self.array:
+            clone.append(copy.copy(i))
+        return clone
+
+    def load_snapshot(self):
+        """
+        load the saved snapshot of this bucket array, current bucket array state will be lost
+        """
+        assert self.snapshot is not None
+        self.max_gain = self.snapshot[0]
+        self.array = self.snapshot[1]
+        self.free_cell_list = self.snapshot[2]
 
     def __getitem__(self, i: int) -> list:
         assert -self.pmax <= i <= self.pmax
@@ -325,10 +412,10 @@ class BucketArray:
         remove specified cell from this bucket list
         """
         assert isinstance(cell, Cell)
-        cell.bucket.remove(cell)
-        if self[self.max_gain] == cell.bucket and len(cell.bucket) == 0:
+        cell.bucket().remove(cell)
+        if self[self.max_gain] == cell.bucket() and len(cell.bucket()) == 0:
             self.decrement_max_gain()
-        cell.bucket = None
+        cell.bucket_num = None
 
     def yank_cell(self, cell: Cell):
         """
@@ -360,7 +447,7 @@ class BucketArray:
         assert -self.pmax <= cell.gain <= self.pmax
 
         self[cell.gain].append(cell)
-        cell.bucket = self[cell.gain]
+        cell.bucket_num = cell.gain + self.pmax
         if cell.gain > self.max_gain:
             self.max_gain = cell.gain
 
