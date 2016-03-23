@@ -177,5 +177,11 @@ def test_perform_pass():
     fm.perform_pass()
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
 
     assert True

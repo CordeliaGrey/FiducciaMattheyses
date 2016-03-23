@@ -107,6 +107,7 @@ class Net:
                 self.blockA_ref.fm.cutset += 1
             else:
                 self.blockA_ref.fm.cutset -= 1
+            self.cut = new_cutstate
 
     def cell_to_blockA(self, cell):
         """
