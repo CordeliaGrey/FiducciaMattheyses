@@ -1,6 +1,7 @@
 import numpy as np
 from FiducciaMattheyses import FiducciaMattheyses
 from Util import *
+import random
 
 __author__ = 'gm'
 
@@ -181,6 +182,66 @@ def test_perform_pass():
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
     fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+
+def test_perform_pass_bigger():
+    # we dont care about the diagonal and values below
+    PM = [[0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+          [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 4, 1, 1, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 5, 1, 0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 6, 1, 0, 0, 0, 0, 1],
+          [0, 0, 0, 0, 0, 0, 0, 7, 1, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 1, 0, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 1, 0],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 1],
+          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12]]
+
+    PM = np.array(PM, dtype="b1", order='C')
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.initial_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+    fm.perform_pass()
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+
+def test_perform_pass_autogen():
+    random.seed()
+    size = 1000
+    edges_per_cell = 10
+
+    PM = np.zeros((size, size), dtype="b1", order='C')
+
+    for i in range(size-1):
+        for k in range(edges_per_cell):
+            j = random.randint(i+1, size-1)
+            PM[i, j] = 1
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
 
