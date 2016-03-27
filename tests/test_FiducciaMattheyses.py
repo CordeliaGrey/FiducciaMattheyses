@@ -229,12 +229,12 @@ def test_perform_pass_bigger():
 def test_perform_pass_autogen():
     random.seed()
     size = 1000
-    edges_per_cell = 10
+    edges_factor = 10
 
     PM = np.zeros((size, size), dtype="b1", order='C')
 
     for i in range(size-1):
-        for k in range(edges_per_cell):
+        for k in range(edges_factor):
             j = random.randint(i+1, size-1)
             PM[i, j] = 1
 
@@ -243,19 +243,11 @@ def test_perform_pass_autogen():
     fm.initial_pass()
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
-    fm.perform_pass()
-    assert_block(fm.blockA, fm)
-    assert_block(fm.blockB, fm)
+
+    for i in range(10):
+        fm.perform_pass()
+        assert_block(fm.blockA, fm)
+        assert_block(fm.blockB, fm)
+        # print(fm.cutset)
+
     assert True  # this is here for PyCharm to recognize this as a test
