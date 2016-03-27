@@ -251,3 +251,26 @@ def test_perform_pass_autogen():
         # print(fm.cutset)
 
     assert True  # this is here for PyCharm to recognize this as a test
+
+
+def test_find_mincut():
+    random.seed()
+    size = 1000
+    edges_factor = 3
+
+    PM = np.zeros((size, size), dtype="b1", order='C')
+
+    for i in range(size-1):
+        for k in range(edges_factor):
+            j = random.randint(i+1, size-1)
+            PM[i, j] = 1
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
+
+    fm.find_mincut()
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    assert True

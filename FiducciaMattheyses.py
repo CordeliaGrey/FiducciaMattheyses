@@ -246,7 +246,16 @@ class FiducciaMattheyses:
 
     def find_mincut(self):
         """
-        perform multiple passes until no more improvements are given, keep the best pass
+        perform multiple passes until no more improvements are given, keep the best pass.
+        input_routine() must have been called first
         """
-        pass
-        # TODO: implement
+        self.initial_pass()
+        prev_cutset = sys.maxsize
+        self.perform_pass()
+        iterations = 1
+        while self.cutset != prev_cutset:
+            prev_cutset = self.cutset
+            self.perform_pass()
+            iterations += 1
+
+        print("found mincut in %d iterations" % iterations)
