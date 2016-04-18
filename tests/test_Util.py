@@ -298,12 +298,6 @@ def test_snapshots():
 
     fm.blockA.initialize()
 
-    # c1.take_snapshot()
-    # c1.load_snapshot()
-    # n1.take_snapshot()
-    # n1.load_snapshot()
-    # fm.blockA.take_snapshot()
-    # fm.blockA.load_snapshot()
     fm.take_snapshot()
     fm.load_snapshot()
 

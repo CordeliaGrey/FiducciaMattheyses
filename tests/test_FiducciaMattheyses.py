@@ -188,6 +188,7 @@ def test_perform_pass():
 
     assert True  # this is here for PyCharm to recognize this as a test
 
+
 def test_perform_pass_bigger():
     # we don't care about the diagonal and values below
     PM = [[0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -233,9 +234,9 @@ def test_perform_pass_autogen():
 
     PM = np.zeros((size, size), dtype="b1", order='C')
 
-    for i in range(size-1):
+    for i in range(size - 1):
         for k in range(edges_factor):
-            j = random.randint(i+1, size-1)
+            j = random.randint(i + 1, size - 1)
             PM[i, j] = 1
 
     fm = FiducciaMattheyses()
@@ -248,7 +249,6 @@ def test_perform_pass_autogen():
         fm.perform_pass()
         assert_block(fm.blockA, fm)
         assert_block(fm.blockB, fm)
-        # print(fm.cutset)
 
     assert True  # this is here for PyCharm to recognize this as a test
 
@@ -260,9 +260,9 @@ def test_find_mincut():
 
     PM = np.zeros((size, size), dtype="b1", order='C')
 
-    for i in range(size-1):
+    for i in range(size - 1):
         for k in range(edges_factor):
-            j = random.randint(i+1, size-1)
+            j = random.randint(i + 1, size - 1)
             PM[i, j] = 1
 
     fm = FiducciaMattheyses()
@@ -273,4 +273,4 @@ def test_find_mincut():
     assert_block(fm.blockA, fm)
     assert_block(fm.blockB, fm)
 
-    assert True
+    assert True  # this is here for PyCharm to recognize this as a test

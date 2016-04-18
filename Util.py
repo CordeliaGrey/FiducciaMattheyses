@@ -13,8 +13,8 @@ class Cell:
         self.block = block  # the block this cell belongs to, "A" or "B"
         """:type block Block"""
         self.locked = False  # whether this cell locked or free to move
-        self.bucket_num = None  # number 0f the bucket this cell belongs to
-        """:type bucket int"""
+        self.bucket_num = None  # number of the bucket this cell belongs to
+        """:type bucket_num int"""
         self.snapshot = None  # this will hold the state of this cell at the time a snapshot is taken
 
     def bucket(self):
@@ -102,11 +102,11 @@ class Net:
         self.blockB = 0  # the number of cells in this net that belong to block B
         self.blockA_locked = 0  # number of cells in this net that belong to block A and are locked
         self.blockB_locked = 0  # number of cells in this net that belong to block B and are locked
-        self.blockA_free = 0    # number of cells in this net that belong to block A and are not locked
-        self.blockB_free = 0    # number of cells in this net that belong to block B and are not locked
+        self.blockA_free = 0  # number of cells in this net that belong to block A and are not locked
+        self.blockB_free = 0  # number of cells in this net that belong to block B and are not locked
         self.blockA_cells = []  # the cells that belong to this net and are part of block A
         self.blockB_cells = []  # the cells that belong to this net and are part of block B
-        self.cut = False        # whether this net is cut. This means that it has cells both in block A and B
+        self.cut = False  # whether this net is cut. This means that it has cells both in block A and B
         self.snapshot = None  # this will hold the state of this net at the time a snapshot is taken
 
     def take_snapshot(self):
