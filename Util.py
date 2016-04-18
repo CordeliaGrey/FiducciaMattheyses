@@ -268,6 +268,7 @@ class Block:
         self.size = 0
         self.bucket_array = BucketArray(pmax)
         self.cells = []  # cells that belong to this block
+        """:type cells list of Cell """
         self.fm = fm  # top level object FiducciaMattheyses that contains this block
         """:type fm FiducciaMattheyses.FiducciaMattheyses"""
         self.snapshot = None  # this will hold the state of this block at the time a snapshot is taken

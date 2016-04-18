@@ -274,3 +274,94 @@ def test_find_mincut():
     assert_block(fm.blockB, fm)
 
     assert True  # this is here for PyCharm to recognize this as a test
+
+
+def test_restrictions_on_input_routine():
+    PM = [[1, 1, 0, 0, 1, 0, 0, 0],
+          [1, 1, 0, 0, 0, 1, 0, 0],
+          [0, 0, 1, 1, 0, 0, 1, 0],
+          [0, 0, 1, 1, 0, 0, 0, 1],
+          [1, 0, 0, 0, 1, 1, 0, 0],
+          [0, 1, 0, 0, 1, 1, 1, 0],
+          [0, 0, 1, 0, 0, 1, 1, 1],
+          [0, 0, 0, 1, 0, 0, 1, 1]]
+
+    PM = np.array(PM, dtype="b1", order='C')
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM)
+
+    fm.find_mincut()
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    # uncomment to see the two partitions
+    # print("BlockA: ")
+    # for c in fm.blockA.cells:
+    #     print(str(c.n + 1) + " ", end="")
+    # print("\n\nBlockB: ")
+    # for c in fm.blockB.cells:
+    #     print(str(c.n + 1) + " ", end="")
+    # print("\n")
+    #
+    # print("cutset: " + str(fm.cutset) + "\n\n")
+
+    blockA_cell_nums = []
+    blockB_cell_nums = []
+    for c in fm.blockA.cells:
+        blockA_cell_nums.append(c.n + 1)
+    for c in fm.blockB.cells:
+        blockB_cell_nums.append(c.n + 1)
+
+    assert len(blockA_cell_nums) == 4
+    assert 1 in blockA_cell_nums
+    assert 2 in blockA_cell_nums
+    assert 5 in blockA_cell_nums
+    assert 6 in blockA_cell_nums
+
+    assert len(blockB_cell_nums) == 4
+    assert 3 in blockB_cell_nums
+    assert 4 in blockB_cell_nums
+    assert 7 in blockB_cell_nums
+    assert 8 in blockB_cell_nums
+
+    restrictions = [0, 3]
+
+    fm = FiducciaMattheyses()
+    fm.input_routine(PM, restrictions=restrictions)
+
+    fm.find_mincut()
+
+    assert_block(fm.blockA, fm)
+    assert_block(fm.blockB, fm)
+
+    # uncomment to see the two partitions
+    # print("BlockA: ")
+    # for c in fm.blockA.cells:
+    #     print(str(c.n + 1) + " ", end="")
+    # print("\n\nBlockB: ")
+    # for c in fm.blockB.cells:
+    #     print(str(c.n + 1) + " ", end="")
+    # print("\n")
+    #
+    # print("cutset: " + str(fm.cutset) + "\n\n")
+
+    blockA_cell_nums = []
+    blockB_cell_nums = []
+    for c in fm.blockA.cells:
+        blockA_cell_nums.append(c.n + 1)
+    for c in fm.blockB.cells:
+        blockB_cell_nums.append(c.n + 1)
+
+    assert len(blockA_cell_nums) == 3
+    assert 2 in blockA_cell_nums
+    assert 5 in blockA_cell_nums
+    assert 6 in blockA_cell_nums
+
+    assert len(blockB_cell_nums) == 3
+    assert 3 in blockB_cell_nums
+    assert 7 in blockB_cell_nums
+    assert 8 in blockB_cell_nums
+
+    assert True  # this is here for PyCharm to recognize this as a test
