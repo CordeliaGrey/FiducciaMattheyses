@@ -65,14 +65,18 @@ class FiducciaMattheyses:
         :type edge_matrix: np.ndarray
         """
         assert isinstance(edge_matrix, np.ndarray)
-        I, J = edge_matrix.shape
+        if restrictions is None:
+            Q = [i for i in range(edge_matrix.shape[0])]
+        else:
+            Q = []
+            for i in range(edge_matrix.shape[0]):
+                if i not in restrictions:
+                    Q.append(i)
         net = 0
-        for i in range(I):
-            for j in range(i + 1, J):
-                if restrictions is not None and (i in restrictions or j in restrictions):
-                    continue
-                if edge_matrix[i][j] == 1:
-                    self.__add_pair(i, j, net)
+        for i in range(len(Q)):
+            for j in range(i + 1, len(Q)):
+                if edge_matrix[Q[i]][Q[j]] == 1:
+                    self.__add_pair(Q[i], Q[j], net)
                     net += 1
 
         for cell in self.cell_array.values():
