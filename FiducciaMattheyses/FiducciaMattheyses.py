@@ -1,5 +1,5 @@
 import numpy as np
-from Util import Cell, Net, Block
+from . Util import Cell, Net, Block
 import sys
 
 __author__ = 'gm'
@@ -260,7 +260,9 @@ class FiducciaMattheyses:
     def find_mincut(self):
         """
         perform multiple passes until no more improvements are given, keep the best pass.
-        input_routine() must have been called first
+        input_routine() must have been called first.
+
+        returns the partitions in the form: ([1,3,5],[2,4,6,7])
         """
         self.initial_pass()
         prev_cutset = sys.maxsize
@@ -272,3 +274,5 @@ class FiducciaMattheyses:
             iterations += 1
 
         print("found mincut in %d iterations" % iterations)
+
+        return [c.n for c in self.blockA.cells], [c.n for c in self.blockB.cells]

@@ -1,6 +1,6 @@
 import numpy as np
-from FiducciaMattheyses import FiducciaMattheyses
-from Util import *
+from .. FiducciaMattheyses import FiducciaMattheyses
+from .. Util import *
 import random
 
 __author__ = 'gm'

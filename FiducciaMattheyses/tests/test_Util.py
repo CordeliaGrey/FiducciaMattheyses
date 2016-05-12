@@ -1,6 +1,6 @@
-from Util import *
-from FiducciaMattheyses import FiducciaMattheyses
-from tests.test_FiducciaMattheyses import assert_block
+from .. Util import *
+from .. FiducciaMattheyses import FiducciaMattheyses
+from . test_FiducciaMattheyses import assert_block
 
 __author__ = 'gm'
 
