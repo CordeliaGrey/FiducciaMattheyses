@@ -1,6 +1,6 @@
 import numpy as np
-from .. FiducciaMattheyses import FiducciaMattheyses
-from .. Util import *
+from ..FiducciaMattheyses import FiducciaMattheyses
+from ..Util import *
 import random
 
 __author__ = 'gm'
@@ -276,7 +276,7 @@ def test_find_mincut():
     assert True  # this is here for PyCharm to recognize this as a test
 
 
-def test_restrictions_on_input_routine():
+def test_selection_on_input_routine():
     PM = [[1, 1, 0, 0, 1, 0, 0, 0],
           [1, 1, 0, 0, 0, 1, 0, 0],
           [0, 0, 1, 1, 0, 0, 1, 0],
@@ -326,10 +326,10 @@ def test_restrictions_on_input_routine():
     assert 7 in blockB_cell_nums
     assert 8 in blockB_cell_nums
 
-    restrictions = [0, 3]
+    selection = [1, 2, 4, 5, 6, 7]
 
     fm = FiducciaMattheyses()
-    fm.input_routine(PM, restrictions=restrictions)
+    fm.input_routine(PM, selection=selection)
 
     fm.find_mincut()
 

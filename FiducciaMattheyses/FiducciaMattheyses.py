@@ -46,7 +46,7 @@ class FiducciaMattheyses:
         for net in self.net_array.values():
             net.load_snapshot()
 
-    def input_routine(self, edge_matrix: np.ndarray, restrictions=None):
+    def input_routine(self, edge_matrix: np.ndarray, selection=None):
         """
         constructs the cell_array and net_array from an input matrix of the form
         [[1, 1, 1, 0, 1],
@@ -57,21 +57,19 @@ class FiducciaMattheyses:
         where 1 represents an edge between two nodes.
         In the above example node 0 is connected to 1, 2 and 4 (by looking at the first line of the table)
 
-        If restrictions is not None then every cell specified in this list is ignored from the edge_matrix
+        If selection is not None then only cells specified in this list are taken into consideration. All other
+        cells from the edge_matrix are ignored
 
-        :param restrictions: list of cells that should be ignored
-        :type restrictions: list
+        :param selection: list of cells that should not be ignored
+        :type selection: list
         :param edge_matrix: contains cell - edge information as described
         :type edge_matrix: np.ndarray
         """
         assert isinstance(edge_matrix, np.ndarray)
-        if restrictions is None:
+        if selection is None:
             Q = [i for i in range(edge_matrix.shape[0])]
         else:
-            Q = []
-            for i in range(edge_matrix.shape[0]):
-                if i not in restrictions:
-                    Q.append(i)
+            Q = selection
         net = 0
         for i in range(len(Q)):
             for j in range(i + 1, len(Q)):
