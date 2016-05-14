@@ -253,7 +253,8 @@ class FiducciaMattheyses:
                 self.take_snapshot()
 
             bcell = self.get_base_cell()
-        self.load_snapshot()
+        if self.snapshot is not None:
+            self.load_snapshot()
 
     def find_mincut(self):
         """
