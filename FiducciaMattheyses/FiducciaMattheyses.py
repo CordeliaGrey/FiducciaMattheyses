@@ -1,6 +1,7 @@
 import numpy as np
 from . Util import Cell, Net, Block
 import sys
+import logging
 
 __author__ = 'gm'
 
@@ -20,6 +21,7 @@ class FiducciaMattheyses:
         """:type blockB Block"""
         self.cutset = 0  # number of sets that are cut
         self.snapshot = None  # this will hold the state of FiducciaMattheyses at the time a snapshot is taken
+        self.logger = logging.getLogger("FiducciaMattheyses")
 
     def take_snapshot(self):
         """
@@ -266,12 +268,14 @@ class FiducciaMattheyses:
         self.initial_pass()
         prev_cutset = sys.maxsize
         self.perform_pass()
+        self.logger.debug("current iteration: %d cutset: %d" % (1, self.cutset))
         iterations = 1
         while self.cutset != prev_cutset:
+            self.logger.debug("current iteration: %d cutset: %d" % (iterations + 1, self.cutset))
             prev_cutset = self.cutset
             self.perform_pass()
             iterations += 1
 
-        print("found mincut in %d iterations" % iterations)
+        self.logger.info("found mincut in %d iterations: %d" % (iterations, self.cutset))
 
         return [c.n for c in self.blockA.cells], [c.n for c in self.blockB.cells]
