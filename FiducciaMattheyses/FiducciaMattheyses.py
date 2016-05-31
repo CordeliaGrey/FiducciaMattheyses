@@ -271,9 +271,9 @@ class FiducciaMattheyses:
         self.logger.debug("current iteration: %d cutset: %d" % (1, self.cutset))
         iterations = 1
         while self.cutset != prev_cutset:
-            self.logger.debug("current iteration: %d cutset: %d" % (iterations + 1, self.cutset))
             prev_cutset = self.cutset
             self.perform_pass()
+            self.logger.debug("current iteration: %d cutset: %d" % (iterations + 1, self.cutset))
             iterations += 1
 
         self.logger.info("found mincut in %d iterations: %d" % (iterations, self.cutset))
